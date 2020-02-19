@@ -1,0 +1,35 @@
+{
+  "dictionaries": [],
+  "flagWords": [],
+  "ignorePaths": [
+    ".eslintrc",
+    ".eslintignore",
+    ".gitignore",
+    ".prettierignore",
+    "*.config.js",
+    "*.json",
+    "*.log",
+    "*.yaml",
+    "**/*.json",
+    "**/*.proto",
+    "**/*.pb",
+    ".vscode",
+    "coverage/**",
+    "lib/**",
+    "node_modules/**",
+    "scripts/**/*.sh",
+    "src/**/*.snap",
+    "src/docs/*.html"
+  ],
+  "language": "en-US",
+  "version": "0.1",
+  "words": [
+    "automerged",
+    "coverallsapp",
+    "dependabot",
+    "editorconfig",
+    "oleg",
+    "koval",
+    "promisify"
+  ]
+}

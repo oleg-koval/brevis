@@ -1,0 +1,73 @@
+{
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "dependencies": {
+    "http-status-codes": "^1.4.0",
+    "jest": "^25.1.0",
+    "ramda": "^0.27.0",
+    "source-map-support": "^0.5.16"
+  },
+  "description": "TypeScript Express OpenAPI 2.0 template",
+  "devDependencies": {
+    "@commitlint/cli": "^8.3.4",
+    "@commitlint/config-conventional": "^8.3.4",
+    "@types/jest": "^25.1.2",
+    "@types/node": "^13.7.2",
+    "@types/ramda": "^0.26.41",
+    "@typescript-eslint/eslint-plugin": "^2.20.0",
+    "@typescript-eslint/parser": "^2.20.0",
+    "commitizen": "^4.0.3",
+    "cspell": "^4.0.48",
+    "eslint": "^6.8.0",
+    "eslint-plugin-functional": "^3.0.1",
+    "husky": "^4.2.3",
+    "lint-staged": "^10.0.7",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^1.19.1",
+    "ts-jest": "^25.2.1",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.7.5"
+  },
+  "engines": {
+    "node": "12",
+    "npm": ">=6.13.4"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "lint-staged"
+    }
+  },
+  "license": "UNLICENSED",
+  "main": "lib/index.js",
+  "name": "@oleg-koval/brevis",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:oleg-koval/brevis.git"
+  },
+  "scripts": {
+    "build": "run-s clean build:ts",
+    "build:ts": "tsc --project tsconfig.production.json",
+    "build:ts:watch": "tsc --project tsconfig.production.json --watch",
+    "clean": "rm -rf lib",
+    "cz": "git-cz",
+    "cz:retry": "git-cz --retry",
+    "format": "prettier --check \"**/*.{js,json,md,ts,yml,yaml}\"",
+    "format:fix": "prettier --write \"**/*.{js,json,md,ts,yml,yaml}\"",
+    "lint": "eslint \"**/*.ts\"",
+    "lint:fix": "eslint --fix --resolve-plugins-relative-to \"./node_modules/eslint-plugin-functional\" \"**/*.ts\"",
+    "package:name": "echo $npm_package_name",
+    "package:version": "echo $npm_package_version",
+    "spellcheck": "cspell '**/*'",
+    "start": "node lib/index.js",
+    "test": "jest --detectOpenHandles",
+    "test:ci": "run-s build test:coverage",
+    "test:coverage": "jest --collect-coverage --runInBand --detectOpenHandles",
+    "test:watch": "jest --watch --verbose false --runInBand",
+    "types": "tsc --noEmit"
+  },
+  "version": "1.0.0"
+}
