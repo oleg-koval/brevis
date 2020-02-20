@@ -1,5 +1,3 @@
-# sls config credentials --provider aws --key accesskey --secret secretkey
-
 name: Continuous Delivery
 
 on:
@@ -33,12 +31,23 @@ jobs:
         run:
           npm ci --ignore-scripts --no-audit --prefer-offline --progress=false
       - name: Build
-        run: npm run build && cp -r lib/* .
+        run: npm run build
       - name: Serverless Deploy
-        uses: serverless/github-action@master
-        with:
-          args: deploy
         env:
           SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          sls config credentials \
+          --provider aws \
+          --key $AWS_SECRET_ACCESS_KEY \
+          --secret $AWS_ACCESS_KEY_ID
+          cd lib && sls deploy
+      # - name: Serverless Deploy
+      #   uses: serverless/github-action@master
+      #   with:
+      #     args: deploy
+      #   env:
+      #     SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
