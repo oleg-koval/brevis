@@ -1,5 +1,5 @@
 service: brevis
-
+tenant: orthodoz
 app: brevis-app
 org: orthodoz
 
