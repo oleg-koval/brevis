@@ -14,8 +14,8 @@ functions:
     handler: handle.hello
     events:
       - http:
-          path: first-api
+          path: say-hello
           method: GET
       - http:
-          path: post-api
+          path: messages
           method: POST
