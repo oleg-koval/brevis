@@ -39,7 +39,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           npm install -g serverless
-          serverless config credentials \
+          SLS_DEBUG=* serverless config credentials \
           --provider aws \
           --key $AWS_SECRET_ACCESS_KEY \
           --secret $AWS_ACCESS_KEY_ID
