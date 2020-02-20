@@ -1,3 +1,6 @@
+/* eslint-disable functional/no-expression-statement */
+/* eslint-disable functional/immutable-data */
+
 module.exports = {
   coveragePathIgnorePatterns: ['/node_modules/', '/test/'],
   coverageReporters: ['lcov', 'text', 'text-summary'],
@@ -13,5 +16,5 @@ module.exports = {
   resetMocks: true,
   roots: ['<rootDir>/src', '<rootDir>/__mocks__'],
   testEnvironment: 'node',
-  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
+  // setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
 };

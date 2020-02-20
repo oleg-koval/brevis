@@ -52,3 +52,7 @@ coverage
 
 # Serverless directories
 .serverless
+
+*.js.map
+!commitlint.config.js
+*.js

@@ -1,0 +1,44 @@
+# sls config credentials --provider aws --key accesskey --secret secretkey
+
+name: Continuous Delivery
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          key:
+            npm-${{ hashFiles(format('{0}{1}', github.workspace,
+            '/package-lock.json')) }}
+          path: ~/.npm
+          restore-keys: |
+            npm-
+      - name: Install dependencies
+        run:
+          npm ci --ignore-scripts --no-audit --prefer-offline --progress=false
+      - name: Build
+        run: npm run build && cp -r lib/* .
+      - name: Serverless Deploy
+        uses: serverless/github-action@master
+        with:
+          args: deploy
+        env:
+          SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+          # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

@@ -3,3 +3,4 @@ coverage
 lib
 package.json
 package-lock.json
+.serverless
