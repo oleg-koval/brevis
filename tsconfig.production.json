@@ -1,24 +1,43 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "alwaysStrict": true,
     "charset": "utf-8",
     "declaration": false,
+    "importHelpers": true,
     "downlevelIteration": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["es2020"],
     "module": "commonjs",
+    "moduleResolution": "node",
     "noImplicitAny": false,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": "lib",
+    "outDir": ".build",
+    "preserveConstEnums": true,
     "pretty": true,
-    "rootDir": "src",
+    "removeComments": true,
+    "resolveJsonModule": true,
+    "rootDir": "./",
+    "watch": true,
     "sourceMap": true,
     "strict": true,
     "strictNullChecks": true,
     "target": "es2020"
   },
-  "files": ["./src/handle.ts"]
+  "exclude": [
+    "node_modules/**/*",
+    ".serverless/**/*",
+    ".webpack/**/*",
+    "webpack.config.js",
+    "_warmup/**/*",
+    ".vscode/**/*",
+    "*.config.js",
+    "**/*.js"
+  ]
+  // "files": [
+  //   "./src/handle.ts"
+  // ]
 }
