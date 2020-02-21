@@ -29,6 +29,7 @@
     "orthodoz",
     "coverallsapp",
     "cors",
+    "dotenv",
     "dependabot",
     "editorconfig",
     "oleg",
