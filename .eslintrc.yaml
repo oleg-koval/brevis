@@ -28,9 +28,7 @@ extends:
   - 'eslint:recommended'
   - 'plugin:@typescript-eslint/eslint-recommended'
   - 'plugin:@typescript-eslint/recommended'
-  - 'plugin:@typescript-eslint/recommended-requiring-type-checking'
   - 'plugin:functional/external-recommended'
   - 'plugin:functional/recommended'
-# rules:
-#   '@typescript-eslint/camelcase': off
-#   '@typescript-eslint/restrict-template-expressions': off
+rules:
+  functional/no-try-statement: off

@@ -7,9 +7,7 @@
   "dependencies": {
     "aws-lambda": "^1.0.5",
     "http-status-codes": "^1.4.0",
-    "jest": "^25.1.0",
-    "ramda": "^0.27.0",
-    "serverless": "^1.64.0"
+    "mongoose": "^5.9.1"
   },
   "description": "TypeScript Express OpenAPI 2.0 template",
   "devDependencies": {
@@ -17,23 +15,33 @@
     "@commitlint/config-conventional": "^8.3.4",
     "@types/aws-lambda": "^8.10.43",
     "@types/jest": "^25.1.2",
+    "@types/mongoose": "^5.7.1",
     "@types/node": "^13.7.4",
     "@types/ramda": "^0.26.41",
     "@typescript-eslint/eslint-plugin": "^2.20.0",
     "@typescript-eslint/parser": "^2.20.0",
+    "bluebird": "^3.7.2",
     "commitizen": "^4.0.3",
     "cspell": "^4.0.50",
     "eslint": "^6.8.0",
     "eslint-plugin-functional": "^3.0.1",
     "husky": "^4.2.3",
+    "jest": "^25.1.0",
     "lint-staged": "^10.0.7",
     "npm-run-all": "^4.1.5",
     "prettier": "^1.19.1",
+    "serverless": "^1.64.0",
+    "serverless-dotenv-plugin": "^2.3.2",
+    "serverless-offline": "^5.12.1",
+    "serverless-webpack": "^5.3.1",
     "source-map-support": "^0.5.16",
     "ts-jest": "^25.2.1",
     "ts-loader": "^6.2.1",
     "ts-node": "^8.6.2",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.5",
+    "webpack": "^4.41.6",
+    "webpack-bundle-analyzer": "^3.6.0",
+    "webpack-node-externals": "^1.7.2"
   },
   "engines": {
     "node": "12",

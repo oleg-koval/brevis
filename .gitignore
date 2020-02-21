@@ -38,6 +38,7 @@ jspm_packages
 .yarn-integrity
 
 # dotenv environment variables file
+*.env
 .env
 
 # MacOS-specific files
@@ -54,5 +55,5 @@ coverage
 .serverless
 
 *.js.map
-!commitlint.config.js
 *.js
+!*.config.js

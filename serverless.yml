@@ -3,19 +3,47 @@ tenant: orthodoz
 app: brevis-app
 org: orthodoz
 
+package:
+  individually: true
+
+plugins:
+  - serverless-webpack
+  - serverless-dotenv-plugin
+  - serverless-offline
+
+custom:
+  webpack:
+    includeModules: true
+    packager: 'npm'
+    excludeFiles: src/**/*.spec.js
+  serverless-offline:
+    port: 4000
+    printOutput: true
+    showDuration: true
+    skipCacheInvalidation: true
+
 provider:
   name: aws
   runtime: nodejs12.x
   stage: prod
   region: us-east-1
+  apiGateway:
+    minimumCompressionSize: 1024 # Enable gzip compression for responses > 1 KB
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
 
 functions:
-  hello:
-    handler: handle.hello
+  create:
+    handler: src/handler.create
     events:
-      - http:
-          path: say-hello
-          method: GET
       - http:
           path: messages
           method: POST
+          cors: true
+  get:
+    handler: src/handler.get
+    events:
+      - http:
+          path: messages
+          method: GET
+          cors: true
