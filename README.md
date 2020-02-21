@@ -7,10 +7,6 @@
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your
-local machine for development and testing purposes. See usage notes on how to
-consume this package in your project.
-
 ### Prerequisites
 
 Minimal requirements to set up the project:
@@ -22,6 +18,7 @@ Minimal requirements to set up the project:
   [few commands](https://nodejs.org/en/download/package-manager/#nvm).
 - A package manager [npm](https://www.npmjs.com). All instructions in the
   documentation will follow the npm syntax.
+- [Serverless](https://serverless.com/)
 - Optionally, a [Git](https://git-scm.com) client.
 
 ### Installing
@@ -29,18 +26,17 @@ Minimal requirements to set up the project:
 Start by cloning the repository:
 
 ```bash
-git clone git@github.com:oleg-koval/type-script-express-open-api-template.git
+git clone git@github.com:oleg-koval/brevis.git
 ```
 
 In case you don't have a git client, you can get the latest version directly by
-using
-[this link](https://github.com/oleg-koval/type-script-express-open-api-template/archive/master.zip)
-and extracting the downloaded archive.
+using [this link](https://github.com/oleg-koval/brevis/archive/master.zip) and
+extracting the downloaded archive.
 
 Go the the right directory and install dependencies:
 
 ```bash
-cd type-script-express-open-api-template
+cd brevis
 npm install
 ```
 
