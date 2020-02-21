@@ -31,7 +31,7 @@ provider:
     minimumCompressionSize: 1024 # Enable gzip compression for responses > 1 KB
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
-    MONGODB_CONNECTION_STRING: ${secrets:MONGODB_CONNECTION_STRING}
+    MONGODB_CONNECTION_STRING: ${param:MONGODB_CONNECTION_STRING}
 
 functions:
   create:
