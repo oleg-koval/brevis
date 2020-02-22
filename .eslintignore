@@ -6,3 +6,4 @@ node_modules
 .webpack
 _warmup
 **/*.js
+.build
