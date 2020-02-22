@@ -11,7 +11,7 @@ import {
 } from 'http-status-codes';
 
 import { logInfo } from './logging/index';
-import { connectToMongoDb } from './mongo';
+import { connectToMongoDb } from './database/mongo';
 import { MessageModel } from './models/message';
 import { Document } from 'mongoose';
 

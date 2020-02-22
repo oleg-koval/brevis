@@ -1,8 +1,18 @@
-/* eslint-disable functional/prefer-readonly-type */
+/* eslint-disable functional/no-conditional-statement */
 
-import { logInfo } from './logging';
 import { env as environment } from 'process';
 import * as mongoose from 'mongoose';
+
+import { logInfo } from '../logging';
+import {
+  ActiveConnections,
+  DEFAULT_CONNECTION_NAME,
+  EnvironmentOverride,
+  getConnectionStateByName,
+  getMongoDbUrl,
+  initializeConnectionMap,
+  updateConnectionByName,
+} from './helpers';
 
 /**
  * TODO: Investigate why mongoose.ConnectionStates are not reachable after
@@ -16,13 +26,7 @@ export enum ConnectionStates {
   uninitialized = 99,
 }
 
-const DEFAULT_CONNECTION_NAME = 'DEFAULT_CONNECTION';
-
-type ActiveConnections = Map<string, number>;
 type Mongoose = typeof mongoose;
-type EnvironmentOverride = {
-  readonly [key: string]: string;
-};
 
 const activeConnections: ActiveConnections = new Map();
 
@@ -31,11 +35,11 @@ const activeConnections: ActiveConnections = new Map();
  * returns connection and readyState (ConnectionStates).
  * @param connectionString
  */
-const connectByMongoUrl = async (
+export const connectByMongoUrl = async (
   connectionString: string,
 ): Promise<{
-  connect: Mongoose;
-  readyState: number;
+  readonly connect: Mongoose;
+  readonly readyState: number;
 }> => {
   const connect = await mongoose.connect(connectionString, {
     useNewUrlParser: true,
@@ -47,35 +51,10 @@ const connectByMongoUrl = async (
   };
 };
 
-const getConnectionByName = (
-  // eslint-disable-next-line functional/prefer-readonly-type
-  map: ActiveConnections,
-  connectionName: string,
-): number => map.get(connectionName) ?? 0;
-
-const updateConnectionByName = (
-  // eslint-disable-next-line functional/prefer-readonly-type
-  map: ActiveConnections,
-  connectionName: string,
-  state: mongoose.ConnectionStates,
-  // eslint-disable-next-line functional/prefer-readonly-type
-): ActiveConnections => map.set(connectionName, state);
-
-const initializeConnectionMap = (
-  map: ActiveConnections,
-  connectionName: string = DEFAULT_CONNECTION_NAME,
-): ActiveConnections => map.set(connectionName, 0);
-
-const getMongoDbUrl = (environment: EnvironmentOverride): string => {
-  const mongoDbUrl = environment.MONGODB_CONNECTION_STRING;
-
-  return mongoDbUrl ? mongoDbUrl : 'MongoDb url is not set.';
-};
-
-const useActiveConnectionState = async (
+export const useActiveConnectionState = async (
   activeConnectionState: number,
   connectionName: string,
-): Promise<Error | Mongoose> => {
+): Promise<Error | Mongoose | void> => {
   // eslint-disable-next-line functional/no-conditional-statement
   switch (activeConnectionState) {
     case ConnectionStates.connected: {
@@ -84,14 +63,18 @@ const useActiveConnectionState = async (
       // eslint-disable-next-line functional/no-expression-statement
       logInfo(message);
 
-      return new Error(message);
+      return Promise.resolve();
     }
     case ConnectionStates.connecting:
     case ConnectionStates.disconnected:
     case ConnectionStates.disconnecting: {
-      const mongooseConnectionState = await connectByMongoUrl(
-        getMongoDbUrl(environment as EnvironmentOverride),
-      );
+      const mongoUrlOrError = getMongoDbUrl(environment as EnvironmentOverride);
+
+      if (typeof mongoUrlOrError !== 'string') {
+        return mongoUrlOrError;
+      }
+
+      const mongooseConnectionState = await connectByMongoUrl(mongoUrlOrError);
 
       const { readyState, connect } = mongooseConnectionState;
 
@@ -113,16 +96,26 @@ const useActiveConnectionState = async (
 
 export const connectToMongoDb = async (
   connectionName: string = DEFAULT_CONNECTION_NAME,
-): Promise<Mongoose | Error> => {
+): Promise<Mongoose | Error | void> => {
   const connectionsMap = initializeConnectionMap(
     activeConnections,
     connectionName,
   );
 
-  const activeConnectionState = getConnectionByName(
+  const activeConnectionState = getConnectionStateByName(
     connectionsMap,
     connectionName,
   );
 
-  return useActiveConnectionState(activeConnectionState, connectionName);
+  const connectedOrError = await useActiveConnectionState(
+    activeConnectionState,
+    connectionName,
+  );
+
+  if (connectedOrError instanceof Error) {
+    // eslint-disable-next-line functional/no-throw-statement
+    throw connectedOrError;
+  }
+
+  return connectedOrError;
 };

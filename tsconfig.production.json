@@ -37,7 +37,4 @@
     "*.config.js",
     "**/*.js"
   ]
-  // "files": [
-  //   "./src/handle.ts"
-  // ]
 }
