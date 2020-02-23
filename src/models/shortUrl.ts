@@ -10,9 +10,10 @@ const options = {
 };
 
 export type ShortUrlType = {
+  readonly _id: string;
   readonly url: string;
-  readonly hash: string;
   readonly ip: string;
+  readonly createdAt: number;
 };
 
 const ShortURLSchema = new Schema(
@@ -43,4 +44,38 @@ export const findOneOrCreate = async (
   return shortUrlDocument !== null
     ? shortUrlDocument
     : ShortURLModel.create(condition);
+};
+
+type StatsResponsePayload = {
+  readonly url: string;
+  readonly hashes: readonly string[];
+  readonly ipAddresses: readonly string[];
+};
+
+export const findAllStatsForUrl = async (
+  condition: Pick<ShortUrlType, 'url'>,
+): Promise<StatsResponsePayload> => {
+  const shortUrlDocuments = await ShortURLModel.find(condition);
+
+  return shortUrlDocuments.reduce<StatsResponsePayload>(
+    (
+      previous: StatsResponsePayload,
+      current: Document,
+    ): StatsResponsePayload => {
+      const document: ShortUrlType = current.toObject();
+
+      return Object.keys(previous).length !== 0
+        ? {
+            ...previous,
+            hashes: [...previous.hashes, document._id],
+            ipAddresses: [...previous.ipAddresses, document.ip],
+          }
+        : {
+            url: condition.url,
+            hashes: [document._id],
+            ipAddresses: [document.ip],
+          };
+    },
+    {} as StatsResponsePayload,
+  );
 };

@@ -48,3 +48,10 @@ functions:
           path: url
           method: GET
           cors: true
+  stats:
+    handler: src/handler.getStatsByUrl
+    events:
+      - http:
+          path: stats/url
+          method: post
+          cors: true
