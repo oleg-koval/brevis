@@ -179,5 +179,45 @@ describe('connectToMongoDb', (): void => {
       `);
       },
     );
+
+    it('returns mongoose connected state, initializes default connection', async (): Promise<
+      void
+    > => {
+      expect.assertions(1);
+
+      jest
+        .spyOn(helpers, 'initializeConnectionMap')
+        .mockImplementationOnce(() => {
+          const mockMap = new Map();
+          mockMap.set(helpers.DEFAULT_CONNECTION_NAME, 0);
+          return mockMap;
+        });
+
+      jest
+        .spyOn(helpers, 'getMongoDbUrl')
+        .mockImplementationOnce(() => 'test-connection-url');
+      jest.spyOn(logger, 'logInfo');
+      jest.spyOn(mongoose, 'connect').mockResolvedValue(
+        Promise.resolve({
+          connections: [
+            {
+              readyState: 1,
+            },
+          ],
+        } as typeof mongoose),
+      );
+
+      const connection = await mongo.connectToMongoDb();
+
+      expect(connection).toMatchInlineSnapshot(`
+        Object {
+          "connections": Array [
+            Object {
+              "readyState": 1,
+            },
+          ],
+        }
+      `);
+    });
   });
 });
