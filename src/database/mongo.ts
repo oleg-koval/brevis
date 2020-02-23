@@ -96,7 +96,7 @@ export const useActiveConnectionState = async (
 
 export const connectToMongoDb = async (
   connectionName: string = DEFAULT_CONNECTION_NAME,
-): Promise<Mongoose | Error | void> => {
+): Promise<Mongoose | void> => {
   const connectionsMap = initializeConnectionMap(
     activeConnections,
     connectionName,

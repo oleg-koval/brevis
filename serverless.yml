@@ -35,16 +35,16 @@ provider:
 
 functions:
   create:
-    handler: src/handler.create
+    handler: src/handler.createShortUrlByHash
     events:
       - http:
-          path: messages
+          path: hash
           method: POST
           cors: true
   get:
-    handler: src/handler.get
+    handler: src/handler.getUrlByHash
     events:
       - http:
-          path: messages
+          path: url
           method: GET
           cors: true
