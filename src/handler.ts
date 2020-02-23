@@ -11,7 +11,7 @@ import {
   NOT_FOUND,
 } from 'http-status-codes';
 import { isUri } from 'valid-url';
-import { pick } from 'ramda';
+import { pick, isEmpty } from 'ramda';
 
 import { connectToMongoDb } from './database/mongo';
 import {
@@ -142,10 +142,19 @@ export const getStatsByUrl: Handler = async (
   try {
     await connectToMongoDb();
 
-    return {
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(await findAllStatsForUrl({ url: body.url })),
-    };
+    const statistics = await findAllStatsForUrl({ url: body.url });
+
+    return isEmpty(statistics) === false
+      ? {
+          statusCode: OK,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(statistics),
+        }
+      : {
+          statusCode: NOT_FOUND,
+          headers: { 'Content-Type': 'text/plain' },
+          body: getStatusText(NOT_FOUND),
+        };
   } catch (error) {
     return {
       statusCode: error.statusCode || INTERNAL_SERVER_ERROR,
