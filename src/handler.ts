@@ -1,15 +1,14 @@
+import {
+  respondBadRequest,
+  respondOk,
+  respondInternalError,
+  respondNotFound,
+} from './responses';
 /* eslint-disable functional/no-conditional-statement */
 /* eslint-disable functional/no-expression-statement */
 
 import './environment';
 import { Handler, APIGatewayEvent, Context } from 'aws-lambda';
-import {
-  BAD_REQUEST,
-  getStatusText,
-  OK,
-  INTERNAL_SERVER_ERROR,
-  NOT_FOUND,
-} from 'http-status-codes';
 import { isUri } from 'valid-url';
 import { pick, isEmpty } from 'ramda';
 
@@ -18,11 +17,27 @@ import {
   findOneOrCreate,
   ShortURLModel,
   findAllStatsForUrl,
+  ShortUrlType,
 } from './models/shortUrl';
 
-type CreateUrlPayload = {
+type CreateUrlRequestParameters = {
   readonly url: string;
 };
+
+export type StatsResponsePayload = {
+  readonly url: string;
+  readonly hashes: readonly string[];
+  readonly ipAddresses: readonly string[];
+};
+
+export type CreateUrlResponsePayload = {
+  readonly hash: string;
+};
+
+export type GetUrlByHashResponsePayload = Pick<
+  CreateUrlRequestParameters,
+  'url'
+>;
 
 export const createShortUrlByHash: Handler = async (
   event: APIGatewayEvent,
@@ -35,39 +50,22 @@ export const createShortUrlByHash: Handler = async (
   context.callbackWaitsForEmptyEventLoop = false;
 
   if (typeof event.body !== 'string') {
-    return {
-      statusCode: BAD_REQUEST,
-      headers: { 'Content-Type': 'text/plain' },
-      body: getStatusText(BAD_REQUEST),
-    };
+    return respondBadRequest();
   }
 
-  const body: CreateUrlPayload = JSON.parse(event.body);
+  const body: CreateUrlRequestParameters = JSON.parse(event.body);
   if (isUri(body.url) === false) {
-    return {
-      statusCode: BAD_REQUEST,
-      headers: { 'Content-Type': 'text/plain' },
-      body: getStatusText(BAD_REQUEST),
-    };
+    return respondBadRequest();
   }
 
   try {
     await connectToMongoDb();
     const { sourceIp } = event.requestContext.identity;
-
     const created = await findOneOrCreate({ url: body.url, ip: sourceIp });
-    return {
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        hash: created._id,
-      }),
-    };
+
+    return respondOk({ hash: created._id });
   } catch (error) {
-    return {
-      statusCode: error.statusCode || INTERNAL_SERVER_ERROR,
-      headers: { 'Content-Type': 'text/plain' },
-      body: 'Could not create the document.',
-    };
+    return respondInternalError();
   }
 };
 
@@ -81,34 +79,19 @@ export const getUrlByHash: Handler = async (
   const hash = event.queryStringParameters?.hash;
 
   if (typeof hash !== 'string') {
-    return {
-      statusCode: BAD_REQUEST,
-      headers: { 'Content-Type': 'text/plain' },
-      body: getStatusText(BAD_REQUEST),
-    };
+    return respondBadRequest();
   }
 
   try {
     await connectToMongoDb();
     const shortUrlDocument = await ShortURLModel.findById(hash);
+    const documentData = shortUrlDocument?.toObject() as ShortUrlType;
 
     return shortUrlDocument === null
-      ? {
-          statusCode: NOT_FOUND,
-          headers: { 'Content-Type': 'text/plain' },
-          body: getStatusText(NOT_FOUND),
-        }
-      : {
-          statusCode: OK,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(pick(['url'], shortUrlDocument)),
-        };
+      ? respondNotFound()
+      : respondOk(pick(['url'], documentData));
   } catch (error) {
-    return {
-      statusCode: error.statusCode || INTERNAL_SERVER_ERROR,
-      headers: { 'Content-Type': 'text/plain' },
-      body: getStatusText(INTERNAL_SERVER_ERROR),
-    };
+    return respondInternalError();
   }
 };
 
@@ -123,20 +106,12 @@ export const getStatsByUrl: Handler = async (
   context.callbackWaitsForEmptyEventLoop = false;
 
   if (typeof event.body !== 'string') {
-    return {
-      statusCode: BAD_REQUEST,
-      headers: { 'Content-Type': 'text/plain' },
-      body: getStatusText(BAD_REQUEST),
-    };
+    return respondBadRequest();
   }
 
-  const body: CreateUrlPayload = JSON.parse(event.body);
+  const body: CreateUrlRequestParameters = JSON.parse(event.body);
   if (isUri(body.url) === false) {
-    return {
-      statusCode: BAD_REQUEST,
-      headers: { 'Content-Type': 'text/plain' },
-      body: getStatusText(BAD_REQUEST),
-    };
+    return respondBadRequest();
   }
 
   try {
@@ -145,21 +120,9 @@ export const getStatsByUrl: Handler = async (
     const statistics = await findAllStatsForUrl({ url: body.url });
 
     return isEmpty(statistics) === false
-      ? {
-          statusCode: OK,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(statistics),
-        }
-      : {
-          statusCode: NOT_FOUND,
-          headers: { 'Content-Type': 'text/plain' },
-          body: getStatusText(NOT_FOUND),
-        };
+      ? respondOk(statistics)
+      : respondNotFound();
   } catch (error) {
-    return {
-      statusCode: error.statusCode || INTERNAL_SERVER_ERROR,
-      headers: { 'Content-Type': 'text/plain' },
-      body: 'Could not create the document.',
-    };
+    return respondInternalError();
   }
 };

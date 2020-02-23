@@ -4,6 +4,7 @@
 
 import { Schema, model, Document } from 'mongoose';
 import { shortId } from '../shortId';
+import { StatsResponsePayload } from '../handler';
 
 const options = {
   versionKey: false,
@@ -44,12 +45,6 @@ export const findOneOrCreate = async (
   return shortUrlDocument !== null
     ? shortUrlDocument
     : ShortURLModel.create(condition);
-};
-
-type StatsResponsePayload = {
-  readonly url: string;
-  readonly hashes: readonly string[];
-  readonly ipAddresses: readonly string[];
 };
 
 export const findAllStatsForUrl = async (
