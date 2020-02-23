@@ -1,4 +1,7 @@
+import { logger } from '../src/logging/winston';
+
 jest.setTimeout(3000);
+logger.transports[0].silent = true; // eslint-disable-line functional/immutable-data
 
 jest.spyOn(console, 'log').mockImplementation();
 jest.spyOn(console, 'error').mockImplementation();

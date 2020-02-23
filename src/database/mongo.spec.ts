@@ -2,7 +2,6 @@ import * as mongoose from 'mongoose';
 
 import * as mongo from './mongo';
 import * as helpers from './helpers';
-import * as logger from '../logging';
 
 afterEach((): void => {
   jest.restoreAllMocks();
@@ -155,7 +154,7 @@ describe('connectToMongoDb', (): void => {
         jest
           .spyOn(helpers, 'getMongoDbUrl')
           .mockImplementationOnce(() => 'test-connection-url');
-        jest.spyOn(logger, 'logInfo');
+
         jest.spyOn(mongoose, 'connect').mockResolvedValue(
           Promise.resolve({
             connections: [
@@ -196,7 +195,7 @@ describe('connectToMongoDb', (): void => {
       jest
         .spyOn(helpers, 'getMongoDbUrl')
         .mockImplementationOnce(() => 'test-connection-url');
-      jest.spyOn(logger, 'logInfo');
+
       jest.spyOn(mongoose, 'connect').mockResolvedValue(
         Promise.resolve({
           connections: [

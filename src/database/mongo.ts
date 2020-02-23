@@ -3,7 +3,6 @@
 import { env as environment } from 'process';
 import * as mongoose from 'mongoose';
 
-import { logInfo } from '../logging';
 import {
   ActiveConnections,
   DEFAULT_CONNECTION_NAME,
@@ -13,6 +12,7 @@ import {
   initializeConnectionMap,
   updateConnectionByName,
 } from './helpers';
+import { logger } from '../logging/winston';
 
 /**
  * TODO: Investigate why mongoose.ConnectionStates are not reachable after
@@ -43,6 +43,7 @@ export const connectByMongoUrl = async (
 }> => {
   const connect = await mongoose.connect(connectionString, {
     useNewUrlParser: true,
+    useUnifiedTopology: true,
   });
 
   return {
@@ -61,7 +62,7 @@ export const useActiveConnectionState = async (
       const message = `Connection ${connectionName} is already in use`;
 
       // eslint-disable-next-line functional/no-expression-statement
-      logInfo(message);
+      logger.warn(message);
 
       return Promise.resolve();
     }
@@ -71,6 +72,9 @@ export const useActiveConnectionState = async (
       const mongoUrlOrError = getMongoDbUrl(environment as EnvironmentOverride);
 
       if (typeof mongoUrlOrError !== 'string') {
+        // eslint-disable-next-line functional/no-expression-statement
+        logger.error(mongoUrlOrError);
+
         return mongoUrlOrError;
       }
 
@@ -113,6 +117,9 @@ export const connectToMongoDb = async (
   );
 
   if (connectedOrError instanceof Error) {
+    // eslint-disable-next-line functional/no-expression-statement
+    logger.error(connectedOrError);
+
     // eslint-disable-next-line functional/no-throw-statement
     throw connectedOrError;
   }

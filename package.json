@@ -45,7 +45,8 @@
     "typescript": "^3.7.5",
     "webpack": "^4.41.6",
     "webpack-bundle-analyzer": "^3.6.0",
-    "webpack-node-externals": "^1.7.2"
+    "webpack-node-externals": "^1.7.2",
+    "winston": "^3.2.1"
   },
   "engines": {
     "node": "12",

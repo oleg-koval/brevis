@@ -11,6 +11,7 @@ import './environment';
 import { Handler, APIGatewayEvent, Context } from 'aws-lambda';
 import { isUri } from 'valid-url';
 import { pick, isEmpty } from 'ramda';
+import { logger } from './logging/winston';
 
 import { connectToMongoDb } from './database/mongo';
 import {
@@ -65,6 +66,8 @@ export const createShortUrlByHash: Handler = async (
 
     return respondOk({ hash: created._id });
   } catch (error) {
+    logger.error(error);
+
     return respondInternalError();
   }
 };
@@ -91,6 +94,8 @@ export const getUrlByHash: Handler = async (
       ? respondNotFound()
       : respondOk(pick(['url'], documentData));
   } catch (error) {
+    logger.error(error);
+
     return respondInternalError();
   }
 };
@@ -123,6 +128,8 @@ export const getStatsByUrl: Handler = async (
       ? respondOk(statistics)
       : respondNotFound();
   } catch (error) {
+    logger.error(error);
+
     return respondInternalError();
   }
 };
