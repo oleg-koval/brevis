@@ -76,7 +76,7 @@ describe('getUrlByHash', (): void => {
         .spyOn(database, 'connectToMongoDb')
         .mockRejectedValueOnce('database-connection-error');
 
-      const event = { queryStringParameters: { hash: shortId.shortId() } };
+      const event = { queryStringParameters: { hash: shortId.generateHash() } };
       const context = {} as Context;
 
       const response = getUrlByHash(event, context, callbackMock);
@@ -178,13 +178,13 @@ describe('cleanup', (): void => {
 
       // create entry in database
       await ShortURLModel.create({
-        _id: shortId.shortId(),
+        _id: shortId.generateHash(),
         url: 'https://google.com',
         ip: '1.1.1.1',
         usedAt: getDateYearFromDate(fakeDate),
       });
       await ShortURLModel.create({
-        _id: shortId.shortId(),
+        _id: shortId.generateHash(),
         url: 'https://facebook.com',
         ip: '1.1.1.1',
         usedAt: getDateYearFromDate(fakeDate),

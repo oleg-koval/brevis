@@ -1,11 +1,12 @@
 /* eslint-disable functional/no-conditional-statement */
+/* eslint-disable functional/no-expression-statement */
 /**
  * @model ShortURLSchema
  */
 
 import { Schema, model, Document } from 'mongoose';
 
-import { shortId } from '../shortId';
+import { generateHash } from '../shortId';
 import { StatsResponsePayload } from '../handler';
 
 const options = {
@@ -25,7 +26,7 @@ const ShortURLSchema = new Schema(
   {
     _id: {
       type: String,
-      default: shortId.generate,
+      default: generateHash.generate,
     },
     url: { type: String },
     ip: { type: String },
@@ -34,10 +35,6 @@ const ShortURLSchema = new Schema(
   },
   options,
 );
-
-/* eslint-disable functional/no-expression-statement */
-ShortURLSchema.index({ ip: 1, url: 1 });
-ShortURLSchema.index({ url: 1 });
 
 export const ShortURLModel = model('ShortUrl', ShortURLSchema);
 

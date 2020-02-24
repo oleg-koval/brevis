@@ -9,7 +9,7 @@ import { isUri } from 'valid-url';
 import { pick, isEmpty, pathOr } from 'ramda';
 
 import { logger } from './logging/winston';
-import { shortId } from './shortId';
+import { generateHash } from './shortId';
 import { connectToMongoDb } from './database/mongo';
 import {
   ShortURLModel,
@@ -113,7 +113,7 @@ export const getUrlByHash: Handler = async (event: APIGatewayEvent) => {
     return respondBadRequest();
   }
 
-  if (shortId.isValid(hash) === false) {
+  if (generateHash.isValid(hash) === false) {
     return respondBadRequest();
   }
 
