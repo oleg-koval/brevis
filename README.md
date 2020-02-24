@@ -1,11 +1,31 @@
-# service
+# url-shortener-service
 
+![Continuous Integration](https://github.com/oleg-koval/brevis/workflows/Continuous%20Integration/badge.svg?branch=master)
+![Continuous Delivery](https://github.com/oleg-koval/brevis/workflows/Continuous%20Delivery/badge.svg?branch=master)
+[![serverless](http://public.serverless.com/badges/v3.svg)](http://www.serverless.com)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
-
-## Usage
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/d52bec96f419528495c4)
 
 ## Getting Started
+
+Functions deployed with Serverless framework to
+[AWS Lambda](https://aws.amazon.com/lambda/) at
+
+[https://7b8kyoyw1e.execute-api.us-east-1.amazonaws.com/prod](https://7b8kyoyw1e.execute-api.us-east-1.amazonaws.com/prod)
+
+Data storage - [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). Build with
+[TypeScript](https://www.typescriptlang.org).
+
+[Postman collection](https://www.getpostman.com/collections/d52bec96f419528495c4)
+can be used to test endpoints locally and remotely.
+
+| function             | type     | path           | execution time | description                                                                                            |
+| -------------------- | -------- | -------------- | -------------- | ------------------------------------------------------------------------------------------------------ |
+| createShortUrlByHash | http     | POST /hash     | -//-           | Request a shortened url. Even if a url was already requested it should generate a new hash.            |
+| getUrlByHash         | http     | GET /url       | -//-           | Get the url by using hash.                                                                             |
+| getStatsByUrl        | http     | GET /stats/url | -//-           | Get the statistics of a url.List of all hashes which were generated and list of ip addresses of users. |
+| cleanup              | schedule | -//-           | `0 0 * * ? *`  | Cronjob which will delete every day at 12.00am hashes of URLs which are not longer used by 12 months.  |
 
 ### Prerequisites
 
@@ -19,6 +39,7 @@ Minimal requirements to set up the project:
 - A package manager [npm](https://www.npmjs.com). All instructions in the
   documentation will follow the npm syntax.
 - [Serverless](https://serverless.com/)
+- [docker-compose](https://docs.docker.com/compose)
 - Optionally, a [Git](https://git-scm.com) client.
 
 ### Installing
@@ -40,17 +61,47 @@ cd brevis
 npm install
 ```
 
+Install serverless:
+
+```bash
+npm install -g serverless
+```
+
 That's it! You can now go to the next step.
+
+#### Run locally
+
+Environment is managed with [`dotenv`](https://www.npmjs.com/package/dotenv).
+Rename `.env.example` to `.env`.
+
+Environment variable **MONGODB_CONNECTION_STRING** should be present: f.e.:
+`mongodb://0.0.0.0:27017/test`
+
+Run `mongodb` container in detached mode:
+
+```shell
+docker-compose up -d
+```
+
+Run tests with coverage:
+
+```shell
+npm run test:coverage
+```
+
+Alternatively `serverless offline` can be used to run functions locally:
+
+```shell
+sls offline start
+```
+
+#### Run tests
 
 ## Tests
 
 All tests are being executed using Jest. All tests files live side-to-side with
-a source code and have a common suffix: .spec.ts. Some helper methods are being
-stored in the test directory.
-
-```bash
-npm run test:start
-```
+a source code and have a common suffix: `.spec.ts`. Some helper methods are
+being stored in the `test` directory.
 
 There are three helper scripts to run tests in the most common scenarios:
 
@@ -83,10 +134,6 @@ npm run lint
 npm run lint:fix
 ```
 
-### Coverage
-
-[TBD]
-
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md).
@@ -95,11 +142,4 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 - [GitHub Actions](https://github.com/features/actions)
 - [Dependabot](https://dependabot.com/)
-
-### Source
-
-- [TypeScript](https://www.typescriptlang.org)
-
-## Versioning
-
-This project adheres to [Semantic Versioning](http://semver.org) v2.
+- [Serverless](https://serverless.com)
