@@ -114,6 +114,11 @@ jobs:
       #     MONGODB_CONNECTION_STRING:
       #       ${{ secrets.MONGODB_CONNECTION_STRING_TEST }}
       #   run: npm run test:ci
+      - name: Test
+        env:
+          MONGODB_CONNECTION_STRING:
+            ${{ secrets.MONGODB_CONNECTION_STRING_TEST }}
+        run: npm run test
   types:
     name: Types
     runs-on: ubuntu-latest
