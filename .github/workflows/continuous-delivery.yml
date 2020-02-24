@@ -52,4 +52,8 @@ jobs:
           SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: serverless deploy
+        run: |
+          # sls deploy
+          sls deploy function -f createShortUrlByHash
+          sls deploy function -f getUrlByHash
+          sls deploy function -f getStatsByUrl

@@ -34,21 +34,21 @@ provider:
     MONGODB_CONNECTION_STRING: ${param:MONGODB_CONNECTION_STRING}
 
 functions:
-  create:
+  createShortUrlByHash:
     handler: src/handler.createShortUrlByHash
     events:
       - http:
           path: hash
           method: POST
           cors: true
-  get:
+  getUrlByHash:
     handler: src/handler.getUrlByHash
     events:
       - http:
           path: url
           method: GET
           cors: true
-  stats:
+  getStatsByUrl:
     handler: src/handler.getStatsByUrl
     events:
       - http:
