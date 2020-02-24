@@ -116,7 +116,7 @@ jobs:
         working-directory: ./mongodb
         env:
           MONGODB_CONNECTION_STRING: mongodb://mongodb:27017/test
-        run: npm run test:coverage
+        run: npm run test:ci
   types:
     name: Types
     runs-on: ubuntu-latest
