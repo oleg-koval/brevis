@@ -114,7 +114,8 @@ jobs:
           npm ci --ignore-scripts --no-audit --prefer-offline --progress=false
       - name: Test
         env:
-          MONGODB_CONNECTION_STRING: mongodb://mongodb:27017/test
+          // TODO: fix connectivity issue in ci
+          MONGODB_CONNECTION_STRING: mongodb://0.0.0.0:27017/test
         run: npm run test:ci
   types:
     name: Types
