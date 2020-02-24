@@ -193,10 +193,10 @@ describe('cleanup', (): void => {
       const response = cleanup({} as APIGatewayEvent, {} as Context, jest.fn());
 
       await expect(response).resolves.toMatchInlineSnapshot(`
-      Object {
-        "statusCode": 200,
-      }
-      `);
+Object {
+  "statusCode": 204,
+}
+`);
     });
   });
 });

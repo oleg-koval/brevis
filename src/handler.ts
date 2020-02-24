@@ -144,7 +144,7 @@ export const cleanup: Handler = async () => {
   try {
     await connectToMongoDb();
 
-    const shortUrlDocument = await ShortURLModel.remove({
+    const shortUrlDocument = await ShortURLModel.deleteMany({
       usedAt: { $lte: getDateYearFromDate(new Date()) },
     });
 
