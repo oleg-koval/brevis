@@ -1,3 +1,4 @@
+import { Document } from 'mongoose';
 import { pathOr } from 'ramda';
 /* eslint-disable functional/no-conditional-statement */
 /* eslint-disable functional/no-expression-statement */
@@ -15,6 +16,7 @@ import {
   ShortURLModel,
   findAllStatsForUrl,
   ShortUrlType,
+  updateUsedAt,
 } from './models/shortUrl';
 import {
   respondBadRequest,
@@ -81,7 +83,7 @@ export const createShortUrlByHash: Handler = async (event: APIGatewayEvent) => {
 
     return respondOk({ hash: created._id });
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
 
     return respondInternalError();
   }
@@ -105,13 +107,16 @@ export const getUrlByHash: Handler = async (event: APIGatewayEvent) => {
     await connectToMongoDb();
 
     const shortUrlDocument = await ShortURLModel.findById(hash);
-    const documentData = shortUrlDocument?.toObject() as ShortUrlType;
 
-    return shortUrlDocument === null
-      ? respondNotFound()
-      : respondOk(pick(['url'], documentData));
+    const documentData = shortUrlDocument?.toObject() as ShortUrlType;
+    if (shortUrlDocument === null) {
+      return respondNotFound();
+    }
+
+    await updateUsedAt(shortUrlDocument as Document & ShortUrlType, Date.now());
+    return respondOk(pick(['url'], documentData));
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
 
     return respondInternalError();
   }
@@ -139,7 +144,7 @@ export const getStatsByUrl: Handler = async (event: APIGatewayEvent) => {
       ? respondOk(statistics)
       : respondNotFound();
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
 
     return respondInternalError();
   }

@@ -16,6 +16,8 @@ export type ShortUrlType = {
   readonly url: string;
   readonly ip: string;
   readonly createdAt: number;
+  // eslint-disable-next-line functional/prefer-readonly-type
+  usedAt: number;
 };
 
 const ShortURLSchema = new Schema(
@@ -27,6 +29,7 @@ const ShortURLSchema = new Schema(
     url: { type: String },
     ip: { type: String },
     createdAt: { type: Date, default: Date.now },
+    usedAt: { type: Date, default: Date.now },
   },
   options,
 );
@@ -34,9 +37,22 @@ const ShortURLSchema = new Schema(
 /* eslint-disable functional/no-expression-statement */
 ShortURLSchema.index({ ip: 1, url: 1 });
 ShortURLSchema.index({ url: 1 });
-/* eslint-enable functional/no-expression-statement */
 
 export const ShortURLModel = model('ShortUrl', ShortURLSchema);
+
+/**
+ * Each time client requests url by hash, "usedAt" field is updated with current time.
+ * "usedAt" date used for cleanup all hashes of URLs which are not longer used by N months.
+ */
+export const updateUsedAt = async (
+  shortUrlDocument: Document & ShortUrlType,
+  usedAt: number,
+): Promise<Document> => {
+  // eslint-disable-next-line functional/immutable-data
+  shortUrlDocument.usedAt = usedAt;
+
+  return shortUrlDocument.save();
+};
 
 export const findOneOrCreate = async (
   condition: Pick<ShortUrlType, 'url' | 'ip'>,

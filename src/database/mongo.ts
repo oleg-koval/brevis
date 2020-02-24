@@ -66,7 +66,7 @@ export const useActiveConnectionState = async (
 
       if (typeof mongoUrlOrError !== 'string') {
         // eslint-disable-next-line functional/no-expression-statement
-        logger.error(mongoUrlOrError);
+        logger.error(mongoUrlOrError.message);
 
         return mongoUrlOrError;
       }
@@ -111,7 +111,7 @@ export const connectToMongoDb = async (
 
   if (connectedOrError instanceof Error) {
     // eslint-disable-next-line functional/no-expression-statement
-    logger.error(connectedOrError);
+    logger.error(connectedOrError.message);
 
     // eslint-disable-next-line functional/no-throw-statement
     throw connectedOrError;
