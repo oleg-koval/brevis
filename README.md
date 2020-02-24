@@ -27,6 +27,16 @@ can be used to test endpoints locally and remotely.
 | getStatsByUrl        | http     | GET /stats/url | -//-           | Get the statistics of a url.List of all hashes which were generated and list of ip addresses of users. |
 | cleanup              | schedule | -//-           | `0 0 * * ? *`  | Cronjob which will delete every day at 12.00am hashes of URLs which are not longer used by 12 months.  |
 
+### TODO:
+
+Some things would be great to add:
+
+- use base62 instead of base64 encoding for url hash. Additional characters `$@`
+  are not "friendly" for short-url;
+- add black list of urls, during creation check if url is not blacklisted or use
+  bloom filter;
+- alerting in slack channel;
+
 ### Prerequisites
 
 Minimal requirements to set up the project:
@@ -67,6 +77,12 @@ Install serverless:
 npm install -g serverless
 ```
 
+Login to serverless:
+
+```bash
+sls login
+```
+
 That's it! You can now go to the next step.
 
 #### Run locally
@@ -89,11 +105,15 @@ Run tests with coverage:
 npm run test:coverage
 ```
 
-Alternatively `serverless offline` can be used to run functions locally:
+Alternatively `serverless offline` can be used to run functions locally
+(connection to local MongoDB or hosted should be provided):
 
 ```shell
 sls offline start
 ```
+
+It is possible to invoke functions locally (connection to local MongoDB or
+hosted should be provided) with `sls invoke local --function <functionName>`
 
 #### Run tests
 
