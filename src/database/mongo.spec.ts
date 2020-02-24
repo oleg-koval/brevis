@@ -117,8 +117,6 @@ describe('connectToMongoDb', (): void => {
     it.each([0, 2, 3])(
       'throws if MONGODB_CONNECTION_STRING is not provided',
       async (): Promise<void> => {
-        console.log('adsdbasdaj', process.env.MONGODB_CONNECTION_STRING);
-
         jest
           .spyOn(helpers, 'initializeConnectionMap')
           .mockImplementationOnce(() => {
@@ -126,6 +124,10 @@ describe('connectToMongoDb', (): void => {
             mockMap.set('test-connection', 0);
             return mockMap;
           });
+
+        jest
+          .spyOn(helpers, 'getMongoDbUrl')
+          .mockReturnValueOnce(new Error('MongoDb url is not set.'));
 
         jest.spyOn(mongoose, 'connect').mockResolvedValue(
           Promise.resolve({
