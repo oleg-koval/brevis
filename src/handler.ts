@@ -1,18 +1,14 @@
-import {
-  respondBadRequest,
-  respondOk,
-  respondInternalError,
-  respondNotFound,
-} from './responses';
+import { pathOr } from 'ramda';
 /* eslint-disable functional/no-conditional-statement */
 /* eslint-disable functional/no-expression-statement */
 
 import './environment';
-import { Handler, APIGatewayEvent, Context } from 'aws-lambda';
+import { Handler, APIGatewayEvent } from 'aws-lambda';
 import { isUri } from 'valid-url';
 import { pick, isEmpty } from 'ramda';
-import { logger } from './logging/winston';
 
+import { logger } from './logging/winston';
+import { shortId } from './shortId';
 import { connectToMongoDb } from './database/mongo';
 import {
   findOneOrCreate,
@@ -20,6 +16,12 @@ import {
   findAllStatsForUrl,
   ShortUrlType,
 } from './models/shortUrl';
+import {
+  respondBadRequest,
+  respondOk,
+  respondInternalError,
+  respondNotFound,
+} from './responses';
 
 type CreateUrlRequestParameters = {
   readonly url: string;
@@ -40,29 +42,42 @@ export type GetUrlByHashResponsePayload = Pick<
   'url'
 >;
 
-export const createShortUrlByHash: Handler = async (
-  event: APIGatewayEvent,
-  context: Context,
-) => {
+const ipAddressOrUndefined = (event: APIGatewayEvent): string | undefined =>
+  pathOr(undefined, ['requestContext', 'identity', 'sourceIp'], event);
+
+const isValidRequestBody = (event: APIGatewayEvent): boolean => {
+  if (typeof event.body !== 'string') {
+    return false;
+  }
+
+  const body: CreateUrlRequestParameters = JSON.parse(event.body);
+  if (isUri(body.url) === undefined) {
+    return false;
+  }
+
+  return true;
+};
+
+export const createShortUrlByHash: Handler = async (event: APIGatewayEvent) => {
   /**
    * Any outstanding events continue to run during the next invocation.
    */
   // eslint-disable-next-line functional/immutable-data
-  context.callbackWaitsForEmptyEventLoop = false;
+  // context.callbackWaitsForEmptyEventLoop = false;
 
-  if (typeof event.body !== 'string') {
-    return respondBadRequest();
-  }
+  const ip = ipAddressOrUndefined(event);
 
-  const body: CreateUrlRequestParameters = JSON.parse(event.body);
-  if (isUri(body.url) === false) {
+  if (isValidRequestBody(event) === false || ip === undefined) {
     return respondBadRequest();
   }
 
   try {
     await connectToMongoDb();
-    const { sourceIp } = event.requestContext.identity;
-    const created = await findOneOrCreate({ url: body.url, ip: sourceIp });
+
+    const created = await findOneOrCreate({
+      url: JSON.parse(event.body!).url,
+      ip,
+    });
 
     return respondOk({ hash: created._id });
   } catch (error) {
@@ -72,12 +87,9 @@ export const createShortUrlByHash: Handler = async (
   }
 };
 
-export const getUrlByHash: Handler = async (
-  event: APIGatewayEvent,
-  context: Context,
-) => {
+export const getUrlByHash: Handler = async (event: APIGatewayEvent) => {
   // eslint-disable-next-line functional/immutable-data
-  context.callbackWaitsForEmptyEventLoop = false;
+  // context.callbackWaitsForEmptyEventLoop = false;
 
   const hash = event.queryStringParameters?.hash;
 
@@ -85,8 +97,13 @@ export const getUrlByHash: Handler = async (
     return respondBadRequest();
   }
 
+  if (shortId.isValid(hash) === false) {
+    return respondBadRequest();
+  }
+
   try {
     await connectToMongoDb();
+
     const shortUrlDocument = await ShortURLModel.findById(hash);
     const documentData = shortUrlDocument?.toObject() as ShortUrlType;
 
@@ -100,29 +117,23 @@ export const getUrlByHash: Handler = async (
   }
 };
 
-export const getStatsByUrl: Handler = async (
-  event: APIGatewayEvent,
-  context: Context,
-) => {
+export const getStatsByUrl: Handler = async (event: APIGatewayEvent) => {
   /**
    * Any outstanding events continue to run during the next invocation.
    */
   // eslint-disable-next-line functional/immutable-data
-  context.callbackWaitsForEmptyEventLoop = false;
+  // context.callbackWaitsForEmptyEventLoop = false;
 
-  if (typeof event.body !== 'string') {
-    return respondBadRequest();
-  }
-
-  const body: CreateUrlRequestParameters = JSON.parse(event.body);
-  if (isUri(body.url) === false) {
+  if (isValidRequestBody(event) === false) {
     return respondBadRequest();
   }
 
   try {
     await connectToMongoDb();
 
-    const statistics = await findAllStatsForUrl({ url: body.url });
+    const statistics = await findAllStatsForUrl({
+      url: JSON.parse(event.body!).url,
+    });
 
     return isEmpty(statistics) === false
       ? respondOk(statistics)

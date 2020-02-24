@@ -15,8 +15,7 @@ import {
 import { logger } from '../logging/winston';
 
 /**
- * TODO: Investigate why mongoose.ConnectionStates are not reachable after
- * build.
+ * TODO: Investigate why mongoose.ConnectionStates are not reachable after build.
  */
 export enum ConnectionStates {
   disconnected = 0,
@@ -44,6 +43,7 @@ export const connectByMongoUrl = async (
   const connect = await mongoose.connect(connectionString, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useCreateIndex: true,
   });
 
   return {
@@ -58,14 +58,7 @@ export const useActiveConnectionState = async (
 ): Promise<Error | Mongoose | void> => {
   // eslint-disable-next-line functional/no-conditional-statement
   switch (activeConnectionState) {
-    case ConnectionStates.connected: {
-      const message = `Connection ${connectionName} is already in use`;
-
-      // eslint-disable-next-line functional/no-expression-statement
-      logger.warn(message);
-
-      return Promise.resolve();
-    }
+    case ConnectionStates.connected:
     case ConnectionStates.connecting:
     case ConnectionStates.disconnected:
     case ConnectionStates.disconnecting: {

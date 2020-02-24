@@ -9,7 +9,7 @@ afterEach((): void => {
 
 describe('connectToMongoDb', (): void => {
   describe('error handling', (): void => {
-    it('throws if connection is already in use - code 1', async (): Promise<
+    it('re-uses connection if it is already in use - code 1', async (): Promise<
       void
     > => {
       jest
@@ -36,9 +36,16 @@ describe('connectToMongoDb', (): void => {
 
       expect.assertions(1);
 
-      await expect(
-        mongo.connectToMongoDb('test-connection'),
-      ).resolves.toBeUndefined();
+      await expect(mongo.connectToMongoDb('test-connection')).resolves
+        .toMatchInlineSnapshot(`
+              Object {
+                "connections": Array [
+                  Object {
+                    "readyState": 1,
+                  },
+                ],
+              }
+            `);
     });
 
     it('throws if connection is uninitialized - code 99', async (): Promise<

@@ -3,6 +3,7 @@
  */
 
 import { Schema, model, Document } from 'mongoose';
+
 import { shortId } from '../shortId';
 import { StatsResponsePayload } from '../handler';
 

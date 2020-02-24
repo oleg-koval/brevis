@@ -18,7 +18,7 @@ type ResponsePayload =
   | StatsResponsePayload
   | GetUrlByHashResponsePayload;
 
-type Response = {
+export type Response = {
   readonly statusCode: number;
   readonly headers: { readonly [key: string]: string };
   readonly body: string;

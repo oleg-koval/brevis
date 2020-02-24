@@ -82,7 +82,7 @@
     "run:prepare": "npm ci && npm run build && cp serverless.yml ./lib",
     "spellcheck": "cspell '**/*'",
     "start": "node lib/index.js",
-    "test": "jest --detectOpenHandles",
+    "test": "jest --detectOpenHandles --runInBand",
     "test:ci": "run-s build test:coverage",
     "test:coverage": "jest --collect-coverage --runInBand --detectOpenHandles",
     "test:watch": "jest --watch --verbose false --runInBand",
