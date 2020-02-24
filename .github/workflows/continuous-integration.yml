@@ -15,6 +15,13 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          key: npm-${{ hashFiles( 'package-lock.json') }}
+          path: ~/.npm
+          restore-keys: |
+            npm-
       - name: Install dependencies
         run:
           npm ci --ignore-scripts --no-audit --prefer-offline --progress=false
@@ -32,6 +39,13 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          key: npm-${{ hashFiles( 'package-lock.json') }}
+          path: ~/.npm
+          restore-keys: |
+            npm-
       - name: Install dependencies
         run:
           npm ci --ignore-scripts --no-audit --prefer-offline --progress=false
@@ -49,6 +63,13 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          key: npm-${{ hashFiles( 'package-lock.json') }}
+          path: ~/.npm
+          restore-keys: |
+            npm-
       - name: Install dependencies
         run:
           npm ci --ignore-scripts --no-audit --prefer-offline --progress=false
@@ -57,7 +78,6 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    # TODO: Fix mongo container connectivity issue.
     services:
       mongodb:
         image: mongo:latest
@@ -79,6 +99,20 @@ jobs:
           cat > .env << EOF
           MONGODB_CONNECTION_STRING=mongodb://0.0.0.0:27017/test
           EOF
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          key: npm-${{ hashFiles( 'package-lock.json') }}
+          path: ~/.npm
+          restore-keys: |
+            npm-
+      - name: Cache local cache
+        uses: actions/cache@v1
+        with:
+          key: eslint-${{ github.sha }}
+          path: .cache
+          restore-keys: |
+            eslint-
       - name: Install dependencies
         run:
           npm ci --ignore-scripts --no-audit --prefer-offline --progress=false
@@ -86,11 +120,6 @@ jobs:
         env:
           MONGODB_CONNECTION_STRING: mongodb://0.0.0.0:27017/test
         run: npm run test:ci
-      # - name: Test
-      #   env:
-      #     MONGODB_CONNECTION_STRING:
-      #       ${{ secrets.MONGODB_CONNECTION_STRING_TEST }}
-      #   run: MONGODB_CONNECTION_STRING=${MONGODB_CONNECTION_STRING} npm run test
   types:
     name: Types
     runs-on: ubuntu-latest
@@ -103,6 +132,20 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12
+      - name: Cache local cache
+        uses: actions/cache@v1
+        with:
+          key: typescript-${{ github.sha }}
+          path: .cache
+          restore-keys: |
+            typescript-
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          key: npm-${{ hashFiles( 'package-lock.json') }}
+          path: ~/.npm
+          restore-keys: |
+            npm-
       - name: Install dependencies
         run:
           npm ci --ignore-scripts --no-audit --prefer-offline --progress=false
