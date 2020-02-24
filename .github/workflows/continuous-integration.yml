@@ -119,6 +119,9 @@ jobs:
           MONGODB_CONNECTION_STRING=${{ secrets.MONGODB_CONNECTION_STRING_TEST }}
           EOF
       - name: Test
+        env:
+          MONGODB_CONNECTION_STRING:
+            ${{ secrets.MONGODB_CONNECTION_STRING_TEST }}
         run: npm run test:ci
   types:
     name: Types
