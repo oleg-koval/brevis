@@ -58,10 +58,10 @@ functions:
   cleanup:
     handler: src/handler.cleanup
     events:
-      - http:
-          path: cleanup
-          method: get
-          cors: true
+      # - http:
+      #     path: cleanup
+      #     method: get
+      #     cors: true
       - schedule:
           name: cleanup-expired-hashes
           description:

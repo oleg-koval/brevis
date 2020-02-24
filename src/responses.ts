@@ -6,6 +6,7 @@ import {
   OK,
   INTERNAL_SERVER_ERROR,
   NOT_FOUND,
+  NO_CONTENT,
 } from 'http-status-codes';
 
 import {
@@ -32,7 +33,7 @@ export const respondOk = (data: ResponsePayload): Response => ({
 });
 
 export const respondNoContent = (): Pick<Response, 'statusCode'> => ({
-  statusCode: OK,
+  statusCode: NO_CONTENT,
 });
 
 export const respondBadRequest = (): Response => ({
