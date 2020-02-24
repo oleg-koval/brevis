@@ -57,3 +57,4 @@ jobs:
           sls deploy function -f createShortUrlByHash
           sls deploy function -f getUrlByHash
           sls deploy function -f getStatsByUrl
+          sls deploy function -f cleanup

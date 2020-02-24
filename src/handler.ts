@@ -12,7 +12,6 @@ import { logger } from './logging/winston';
 import { shortId } from './shortId';
 import { connectToMongoDb } from './database/mongo';
 import {
-  findOneOrCreate,
   ShortURLModel,
   findAllStatsForUrl,
   ShortUrlType,
@@ -83,7 +82,7 @@ export const createShortUrlByHash: Handler = async (event: APIGatewayEvent) => {
   try {
     await connectToMongoDb();
 
-    const created = await findOneOrCreate({
+    const created = await ShortURLModel.create({
       url: JSON.parse(event.body!).url,
       ip,
     });

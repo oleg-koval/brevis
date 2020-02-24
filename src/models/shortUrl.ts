@@ -1,3 +1,4 @@
+/* eslint-disable functional/no-conditional-statement */
 /**
  * @model ShortURLSchema
  */
@@ -54,16 +55,6 @@ export const updateUsedAt = async (
   return shortUrlDocument.save();
 };
 
-export const findOneOrCreate = async (
-  condition: Pick<ShortUrlType, 'url' | 'ip'>,
-): Promise<Document> => {
-  const shortUrlDocument = await ShortURLModel.findOne(condition);
-
-  return shortUrlDocument !== null
-    ? shortUrlDocument
-    : ShortURLModel.create(condition);
-};
-
 export const findAllStatsForUrl = async (
   condition: Pick<ShortUrlType, 'url'>,
 ): Promise<StatsResponsePayload> => {
@@ -76,17 +67,22 @@ export const findAllStatsForUrl = async (
     ): StatsResponsePayload => {
       const document: ShortUrlType = current.toObject();
 
-      return Object.keys(previous).length !== 0
-        ? {
-            ...previous,
-            hashes: [...previous.hashes, document._id],
-            ipAddresses: [...previous.ipAddresses, document.ip],
-          }
-        : {
-            url: condition.url,
-            hashes: [document._id],
-            ipAddresses: [document.ip],
-          };
+      if (Object.keys(previous).length === 0) {
+        return {
+          url: condition.url,
+          hashes: [document._id],
+          ipAddresses: [document.ip],
+        };
+      }
+
+      return {
+        ...previous,
+        hashes: [...previous.hashes, document._id],
+        ipAddresses:
+          previous.ipAddresses.includes(document.ip) === false
+            ? [...previous.ipAddresses, document.ip]
+            : previous.ipAddresses,
+      };
     },
     {} as StatsResponsePayload,
   );

@@ -295,6 +295,11 @@ describe('getStatsByUrl', (): void => {
         ip: '1.1.1.1',
       });
       await ShortURLModel.create({
+        _id: 'foobar2',
+        url: 'https://google.com',
+        ip: '1.1.1.1',
+      });
+      await ShortURLModel.create({
         _id: '424242',
         url: 'https://google.com',
         ip: '2.2.2.2',
@@ -306,17 +311,18 @@ describe('getStatsByUrl', (): void => {
 
       const res = await response;
       expect(JSON.parse(res.body)).toMatchInlineSnapshot(`
-      Object {
-        "hashes": Array [
-          "foobar",
-          "424242",
-        ],
-        "ipAddresses": Array [
-          "1.1.1.1",
-          "2.2.2.2",
-        ],
-        "url": "https://google.com",
-      }
+        Object {
+          "hashes": Array [
+            "foobar",
+            "foobar2",
+            "424242",
+          ],
+          "ipAddresses": Array [
+            "1.1.1.1",
+            "2.2.2.2",
+          ],
+          "url": "https://google.com",
+        }
       `);
     });
   });
