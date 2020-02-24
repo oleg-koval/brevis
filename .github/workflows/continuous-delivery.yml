@@ -37,7 +37,7 @@ jobs:
       - name: Create env file
         run: |
           cat > .env << EOF
-          MONGODB_CONNECTION_STRING=${{ secrets.MONGODB_CONNECTION_STRING }}
+          MONGODB_CONNECTION_STRING=${{ secrets.MONGODB_CONNECTION_STRING_PRODUCTION }}
           EOF
       - name: Serverless AWS authentication
         env:
