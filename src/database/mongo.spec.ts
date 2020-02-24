@@ -117,7 +117,7 @@ describe('connectToMongoDb', (): void => {
     it.each([0, 2, 3])(
       'throws if MONGODB_CONNECTION_STRING is not provided',
       async (): Promise<void> => {
-        console.log(process.env.MONGODB_CONNECTION_STRING);
+        console.log('adsdbasdaj', process.env.MONGODB_CONNECTION_STRING);
 
         jest
           .spyOn(helpers, 'initializeConnectionMap')

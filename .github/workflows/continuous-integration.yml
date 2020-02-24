@@ -101,14 +101,15 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12
-      - name: Install dependencies
-        run:
-          npm ci --ignore-scripts --no-audit --prefer-offline --progress=false
       - name: Create env file
         run: |
           cat > .env << EOF
           MONGODB_CONNECTION_STRING=${{ secrets.MONGODB_CONNECTION_STRING_TEST }}
           EOF
+          printenv
+      - name: Install dependencies
+        run:
+          npm ci --ignore-scripts --no-audit --prefer-offline --progress=false
       # - name: Test
       #   env:
       #     MONGODB_CONNECTION_STRING:
@@ -118,7 +119,7 @@ jobs:
         env:
           MONGODB_CONNECTION_STRING:
             ${{ secrets.MONGODB_CONNECTION_STRING_TEST }}
-        run: npm run test
+        run: MONGODB_CONNECTION_STRING=${MONGODB_CONNECTION_STRING} npm run test
   types:
     name: Types
     runs-on: ubuntu-latest
