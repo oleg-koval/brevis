@@ -113,7 +113,6 @@ jobs:
         run:
           npm ci --ignore-scripts --no-audit --prefer-offline --progress=false
       - name: Test
-        working-directory: ./mongodb
         env:
           MONGODB_CONNECTION_STRING: mongodb://mongodb:27017/test
         run: npm run test:ci
