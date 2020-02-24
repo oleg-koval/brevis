@@ -1,4 +1,5 @@
 /* eslint-disable functional/functional-parameters */
+
 import {
   BAD_REQUEST,
   getStatusText,
@@ -28,6 +29,10 @@ export const respondOk = (data: ResponsePayload): Response => ({
   statusCode: OK,
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(data),
+});
+
+export const respondNoContent = (): Pick<Response, 'statusCode'> => ({
+  statusCode: OK,
 });
 
 export const respondBadRequest = (): Response => ({
