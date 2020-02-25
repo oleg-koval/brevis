@@ -12,7 +12,7 @@ jest.spyOn(console, 'warn').mockImplementation();
 /**
  * Delete all collections and indexes
  */
-export const cleanup = async (): Promise<void> => {
+export const cleanupDb = async (): Promise<void> => {
   await connectToMongoDb();
   await ShortURLModel.collection.drop();
 
@@ -25,7 +25,7 @@ afterEach(
     jest.clearAllMocks();
 
     // Clean database.
-    await cleanup().catch(logger.warn);
+    await cleanupDb().catch(logger.warn);
   },
 );
 

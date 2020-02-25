@@ -47,6 +47,7 @@ jspm_packages
 # Build output
 lib
 deployment
+.webpack
 
 # Coverage output
 coverage

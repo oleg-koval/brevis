@@ -1,6 +1,12 @@
-import { Context } from 'aws-lambda';
+import { getDateYearFromDate } from './date';
+import { Context, APIGatewayEvent } from 'aws-lambda';
 
-import { getUrlByHash, getStatsByUrl, createShortUrlByHash } from './handler';
+import {
+  getUrlByHash,
+  getStatsByUrl,
+  createShortUrlByHash,
+  cleanup,
+} from './handler';
 import { ShortURLModel } from './models/shortUrl';
 import * as shortId from './shortId';
 import * as database from './database/mongo';
@@ -32,14 +38,14 @@ describe('getUrlByHash', (): void => {
       const response = getUrlByHash(event, context, callbackMock);
 
       await expect(response).resolves.toMatchInlineSnapshot(`
-          Object {
-            "body": "Bad Request",
-            "headers": Object {
-              "Content-Type": "text/plain",
-            },
-            "statusCode": 400,
-          }
-      `);
+                        Object {
+                          "body": "Bad Request",
+                          "headers": Object {
+                            "Content-Type": "text/plain",
+                          },
+                          "statusCode": 400,
+                        }
+                  `);
     });
 
     it('returns bad request if hash is not valid', async (): Promise<void> => {
@@ -66,9 +72,11 @@ describe('getUrlByHash', (): void => {
     > => {
       expect.assertions(1);
 
-      jest.spyOn(database, 'connectToMongoDb').mockRejectedValueOnce('error');
+      jest
+        .spyOn(database, 'connectToMongoDb')
+        .mockRejectedValueOnce('database-connection-error');
 
-      const event = { queryStringParameters: { hash: shortId.shortId() } };
+      const event = { queryStringParameters: { hash: shortId.generateHash() } };
       const context = {} as Context;
 
       const response = getUrlByHash(event, context, callbackMock);
@@ -134,6 +142,65 @@ describe('getUrlByHash', (): void => {
   });
 });
 
+describe('cleanup', (): void => {
+  describe('error handling', (): void => {
+    it('returns internal server error if connection to DB cant be established', async (): Promise<
+      void
+    > => {
+      expect.assertions(1);
+
+      jest
+        .spyOn(database, 'connectToMongoDb')
+        .mockRejectedValueOnce('database-connection-error');
+
+      const response = cleanup({} as APIGatewayEvent, {} as Context, jest.fn());
+
+      await expect(response).resolves.toMatchInlineSnapshot(`
+        Object {
+          "body": "Server Error",
+          "headers": Object {
+            "Content-Type": "text/plain",
+          },
+          "statusCode": 500,
+        }
+      `);
+    });
+  });
+
+  describe('data persistance', (): void => {
+    it('removes expired hashes', async (): Promise<void> => {
+      expect.assertions(1);
+
+      const dateNowSpy = jest.spyOn(Date, 'now');
+      const fakeDate = new Date('2018-02-24T00:00:00.000Z');
+
+      dateNowSpy.mockReturnValue(fakeDate.getTime());
+
+      // create entry in database
+      await ShortURLModel.create({
+        _id: shortId.generateHash(),
+        url: 'https://google.com',
+        ip: '1.1.1.1',
+        usedAt: getDateYearFromDate(fakeDate),
+      });
+      await ShortURLModel.create({
+        _id: shortId.generateHash(),
+        url: 'https://facebook.com',
+        ip: '1.1.1.1',
+        usedAt: getDateYearFromDate(fakeDate),
+      });
+
+      const response = cleanup({} as APIGatewayEvent, {} as Context, jest.fn());
+
+      await expect(response).resolves.toMatchInlineSnapshot(`
+Object {
+  "statusCode": 204,
+}
+`);
+    });
+  });
+});
+
 describe('getStatsByUrl', (): void => {
   describe('error handling', (): void => {
     it('returns bad request if query params are not provided', async (): Promise<
@@ -194,7 +261,9 @@ describe('getStatsByUrl', (): void => {
     > => {
       expect.assertions(1);
 
-      jest.spyOn(database, 'connectToMongoDb').mockRejectedValueOnce('error');
+      jest
+        .spyOn(database, 'connectToMongoDb')
+        .mockRejectedValueOnce('database-connection-error');
 
       const event = { body: JSON.stringify({ url: 'https://example.com' }) };
       const context = {} as Context;
@@ -226,6 +295,11 @@ describe('getStatsByUrl', (): void => {
         ip: '1.1.1.1',
       });
       await ShortURLModel.create({
+        _id: 'foobar2',
+        url: 'https://google.com',
+        ip: '1.1.1.1',
+      });
+      await ShortURLModel.create({
         _id: '424242',
         url: 'https://google.com',
         ip: '2.2.2.2',
@@ -237,17 +311,18 @@ describe('getStatsByUrl', (): void => {
 
       const res = await response;
       expect(JSON.parse(res.body)).toMatchInlineSnapshot(`
-      Object {
-        "hashes": Array [
-          "foobar",
-          "424242",
-        ],
-        "ipAddresses": Array [
-          "1.1.1.1",
-          "2.2.2.2",
-        ],
-        "url": "https://google.com",
-      }
+        Object {
+          "hashes": Array [
+            "foobar",
+            "foobar2",
+            "424242",
+          ],
+          "ipAddresses": Array [
+            "1.1.1.1",
+            "2.2.2.2",
+          ],
+          "url": "https://google.com",
+        }
       `);
     });
   });
@@ -281,7 +356,9 @@ describe('createShortUrlByHash', (): void => {
     > => {
       expect.assertions(1);
 
-      jest.spyOn(database, 'connectToMongoDb').mockRejectedValueOnce('error');
+      jest
+        .spyOn(database, 'connectToMongoDb')
+        .mockRejectedValueOnce('database-connection-error');
 
       const event = {
         body: JSON.stringify({ url: 'https://example.com' }),

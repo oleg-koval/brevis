@@ -47,7 +47,7 @@ jobs:
         run: |
           ls -laH
           sls config credentials --provider aws --key $AWS_ACCESS_KEY_ID --secret AWS_SECRET_ACCESS_KEY
-      - name: Serverless Deploy
+      - name: Serverless Deploy (update)
         env:
           SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -57,3 +57,4 @@ jobs:
           sls deploy function -f createShortUrlByHash
           sls deploy function -f getUrlByHash
           sls deploy function -f getStatsByUrl
+          sls deploy function -f cleanup

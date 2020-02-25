@@ -10,4 +10,4 @@ const additionalCharacters = '$@';
 // eslint-disable-next-line functional/no-expression-statement
 _shortId.characters(`${alphaNumericCharset}${additionalCharacters}`);
 
-export const shortId: typeof _shortId = _shortId;
+export const generateHash: typeof _shortId = _shortId;

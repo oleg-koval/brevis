@@ -1,10 +1,12 @@
 /* eslint-disable functional/functional-parameters */
+
 import {
   BAD_REQUEST,
   getStatusText,
   OK,
   INTERNAL_SERVER_ERROR,
   NOT_FOUND,
+  NO_CONTENT,
 } from 'http-status-codes';
 
 import {
@@ -28,6 +30,10 @@ export const respondOk = (data: ResponsePayload): Response => ({
   statusCode: OK,
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(data),
+});
+
+export const respondNoContent = (): Pick<Response, 'statusCode'> => ({
+  statusCode: NO_CONTENT,
 });
 
 export const respondBadRequest = (): Response => ({

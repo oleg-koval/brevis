@@ -55,3 +55,13 @@ functions:
           path: stats/url
           method: post
           cors: true
+  cleanup:
+    handler: src/handler.cleanup
+    events:
+      - schedule:
+          name: cleanup-expired-hashes
+          description:
+            'Create cronjob which will delete every day at 12.00am hashes of
+            URLs which are not longer used by 12 months.'
+          enabled: true
+          rate: cron(0 0 * * ? *)
