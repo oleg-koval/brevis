@@ -43,6 +43,7 @@ Some things would be great to add:
 - alerting in slack channel;
 - based on usage of `GET /stats/url` data can be stored in HDFS or similar to
   enable stats being aggregated;
+- setup authorization for `GET /stats/url`, make it private;
 
 ### Prerequisites
 
