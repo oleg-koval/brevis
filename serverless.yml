@@ -34,24 +34,34 @@ provider:
     MONGODB_CONNECTION_STRING: ${param:MONGODB_CONNECTION_STRING}
 
 functions:
-  create:
+  createShortUrlByHash:
     handler: src/handler.createShortUrlByHash
     events:
       - http:
           path: hash
           method: POST
           cors: true
-  get:
+  getUrlByHash:
     handler: src/handler.getUrlByHash
     events:
       - http:
           path: url
           method: GET
           cors: true
-  stats:
+  getStatsByUrl:
     handler: src/handler.getStatsByUrl
     events:
       - http:
           path: stats/url
           method: post
           cors: true
+  cleanup:
+    handler: src/handler.cleanup
+    events:
+      - schedule:
+          name: cleanup-expired-hashes
+          description:
+            'Create cronjob which will delete every day at 12.00am hashes of
+            URLs which are not longer used by 12 months.'
+          enabled: true
+          rate: cron(0 0 * * ? *)

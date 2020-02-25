@@ -1,27 +1,30 @@
-import { pathOr } from 'ramda';
 /* eslint-disable functional/no-conditional-statement */
 /* eslint-disable functional/no-expression-statement */
 
 import './environment';
+
+import { Document } from 'mongoose';
 import { Handler, APIGatewayEvent } from 'aws-lambda';
 import { isUri } from 'valid-url';
-import { pick, isEmpty } from 'ramda';
+import { pick, isEmpty, pathOr } from 'ramda';
 
 import { logger } from './logging/winston';
-import { shortId } from './shortId';
+import { generateHash } from './shortId';
 import { connectToMongoDb } from './database/mongo';
 import {
-  findOneOrCreate,
   ShortURLModel,
   findAllStatsForUrl,
   ShortUrlType,
+  updateUsedAt,
 } from './models/shortUrl';
 import {
   respondBadRequest,
   respondOk,
   respondInternalError,
   respondNotFound,
+  respondNoContent,
 } from './responses';
+import { getDateYearFromDate } from './date';
 
 type CreateUrlRequestParameters = {
   readonly url: string;
@@ -58,13 +61,18 @@ const isValidRequestBody = (event: APIGatewayEvent): boolean => {
   return true;
 };
 
-export const createShortUrlByHash: Handler = async (event: APIGatewayEvent) => {
-  /**
-   * Any outstanding events continue to run during the next invocation.
-   */
-  // eslint-disable-next-line functional/immutable-data
-  // context.callbackWaitsForEmptyEventLoop = false;
+/**
+ * Request a shortened url. Even if a url was already requested it should generate a new hash.
 
+   POST /hash
+   body { url: string }
+
+   returns json
+   {
+     "hash": ${some_hash}
+   }
+ */
+export const createShortUrlByHash: Handler = async (event: APIGatewayEvent) => {
   const ip = ipAddressOrUndefined(event);
 
   if (isValidRequestBody(event) === false || ip === undefined) {
@@ -74,30 +82,38 @@ export const createShortUrlByHash: Handler = async (event: APIGatewayEvent) => {
   try {
     await connectToMongoDb();
 
-    const created = await findOneOrCreate({
+    const created = await ShortURLModel.create({
       url: JSON.parse(event.body!).url,
       ip,
     });
 
     return respondOk({ hash: created._id });
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
 
     return respondInternalError();
   }
 };
 
-export const getUrlByHash: Handler = async (event: APIGatewayEvent) => {
-  // eslint-disable-next-line functional/immutable-data
-  // context.callbackWaitsForEmptyEventLoop = false;
+/**
+ * Get the url by using hash. A possible endpoint could look like this:
 
+   GET /url?hash=${HASH}
+
+   returns json
+
+   {
+     "url": ${URL}
+   }
+ */
+export const getUrlByHash: Handler = async (event: APIGatewayEvent) => {
   const hash = event.queryStringParameters?.hash;
 
   if (typeof hash !== 'string') {
     return respondBadRequest();
   }
 
-  if (shortId.isValid(hash) === false) {
+  if (generateHash.isValid(hash) === false) {
     return respondBadRequest();
   }
 
@@ -105,25 +121,47 @@ export const getUrlByHash: Handler = async (event: APIGatewayEvent) => {
     await connectToMongoDb();
 
     const shortUrlDocument = await ShortURLModel.findById(hash);
-    const documentData = shortUrlDocument?.toObject() as ShortUrlType;
 
-    return shortUrlDocument === null
-      ? respondNotFound()
-      : respondOk(pick(['url'], documentData));
+    const documentData = shortUrlDocument?.toObject() as ShortUrlType;
+    if (shortUrlDocument === null) {
+      return respondNotFound();
+    }
+
+    await updateUsedAt(shortUrlDocument as Document & ShortUrlType, Date.now());
+    return respondOk(pick(['url'], documentData));
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
 
     return respondInternalError();
   }
 };
 
-export const getStatsByUrl: Handler = async (event: APIGatewayEvent) => {
-  /**
-   * Any outstanding events continue to run during the next invocation.
-   */
-  // eslint-disable-next-line functional/immutable-data
-  // context.callbackWaitsForEmptyEventLoop = false;
+/**
+ * Create cronjob which will delete every day at 12.00am hashes of URLs which are not longer used by 12 months.
+ */
+// eslint-disable-next-line functional/functional-parameters
+export const cleanup: Handler = async () => {
+  try {
+    await connectToMongoDb();
 
+    const shortUrlDocument = await ShortURLModel.deleteMany({
+      usedAt: { $lte: getDateYearFromDate(new Date()) },
+    });
+
+    logger.info(JSON.stringify(shortUrlDocument));
+
+    return respondNoContent();
+  } catch (error) {
+    logger.error(error.message);
+
+    return respondInternalError();
+  }
+};
+
+/**
+ * Get the statistics of a url.
+ */
+export const getStatsByUrl: Handler = async (event: APIGatewayEvent) => {
   if (isValidRequestBody(event) === false) {
     return respondBadRequest();
   }
@@ -139,7 +177,7 @@ export const getStatsByUrl: Handler = async (event: APIGatewayEvent) => {
       ? respondOk(statistics)
       : respondNotFound();
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
 
     return respondInternalError();
   }

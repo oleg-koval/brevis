@@ -15,7 +15,6 @@ export const getMongoDbUrl = (
 ): string | Error => {
   const mongoDbUrl = environment.MONGODB_CONNECTION_STRING;
 
-  // TODO: return error instead.
   return mongoDbUrl ? mongoDbUrl : new Error('MongoDb url is not set.');
 };
 

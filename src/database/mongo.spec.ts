@@ -125,6 +125,10 @@ describe('connectToMongoDb', (): void => {
             return mockMap;
           });
 
+        jest
+          .spyOn(helpers, 'getMongoDbUrl')
+          .mockReturnValueOnce(new Error('MongoDb url is not set.'));
+
         jest.spyOn(mongoose, 'connect').mockResolvedValue(
           Promise.resolve({
             connections: [
