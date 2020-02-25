@@ -27,15 +27,21 @@ can be used to test endpoints locally and remotely.
 | getStatsByUrl        | http     | GET /stats/url | -//-           | Get the statistics of a url.List of all hashes which were generated and list of ip addresses of users. |
 | cleanup              | schedule | -//-           | `0 0 * * ? *`  | Cronjob which will delete every day at 12.00am hashes of URLs which are not longer used by 12 months.  |
 
+_The hash is made of 8 characters using charset with 64 elements, meaning there
+are 64^8 combinations. It is used as an `_id` in MongoDB schema, so after
+"cleanup" job hash becomes available again_
+
 ### TODO:
 
 Some things would be great to add:
 
 - use base62 instead of base64 encoding for url hash. Additional characters `$@`
   are not "friendly" for short-url;
-- add black list of urls, during creation check if url is not blacklisted or use
-  bloom filter;
+- add black list of urls, during creation check if url is not blacklisted;
+- use cache with ttl for entries in front of database;
 - alerting in slack channel;
+- based on usage of `GET /stats/url` data can be stored in HDFS or similar to
+  enable stats being aggregated;
 
 ### Prerequisites
 
@@ -130,6 +136,15 @@ npm run test
 npm run test:watch
 npm run test:coverage
 ```
+
+## Continuous Integration / Delivery
+
+GitHub Actions are configured and run the **tests**, **linting**,
+**formatting**, **spellcheck**, **types** whenever a commit is pushed to this
+repository `master` or any other branch.
+
+Also used to deploy automatically to AWS Lambda `production` after PR merged to
+`master`.
 
 ### Formatting
 

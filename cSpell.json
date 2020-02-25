@@ -35,6 +35,7 @@
     "editorconfig",
     "oleg",
     "koval",
-    "promisify"
+    "promisify",
+    "HDFS"
   ]
 }
