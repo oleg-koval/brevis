@@ -36,6 +36,9 @@ const ShortURLSchema = new Schema(
   options,
 );
 
+ShortURLSchema.index({ usedAt: 1 });
+ShortURLSchema.index({ url: 1 });
+
 export const ShortURLModel = model('ShortUrl', ShortURLSchema);
 
 /**
