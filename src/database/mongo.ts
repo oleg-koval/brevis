@@ -3,7 +3,6 @@
 import { env as environment } from 'process';
 import * as mongoose from 'mongoose';
 
-import { logInfo } from '../logging';
 import {
   ActiveConnections,
   DEFAULT_CONNECTION_NAME,
@@ -13,10 +12,10 @@ import {
   initializeConnectionMap,
   updateConnectionByName,
 } from './helpers';
+import { logger } from '../logging/winston';
 
 /**
- * TODO: Investigate why mongoose.ConnectionStates are not reachable after
- * build.
+ * TODO: Investigate why mongoose.ConnectionStates are not reachable after build.
  */
 export enum ConnectionStates {
   disconnected = 0,
@@ -43,6 +42,8 @@ export const connectByMongoUrl = async (
 }> => {
   const connect = await mongoose.connect(connectionString, {
     useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
   });
 
   return {
@@ -57,20 +58,16 @@ export const useActiveConnectionState = async (
 ): Promise<Error | Mongoose | void> => {
   // eslint-disable-next-line functional/no-conditional-statement
   switch (activeConnectionState) {
-    case ConnectionStates.connected: {
-      const message = `Connection ${connectionName} is already in use`;
-
-      // eslint-disable-next-line functional/no-expression-statement
-      logInfo(message);
-
-      return Promise.resolve();
-    }
+    case ConnectionStates.connected:
     case ConnectionStates.connecting:
     case ConnectionStates.disconnected:
     case ConnectionStates.disconnecting: {
       const mongoUrlOrError = getMongoDbUrl(environment as EnvironmentOverride);
 
       if (typeof mongoUrlOrError !== 'string') {
+        // eslint-disable-next-line functional/no-expression-statement
+        logger.error(mongoUrlOrError.message);
+
         return mongoUrlOrError;
       }
 
@@ -96,7 +93,7 @@ export const useActiveConnectionState = async (
 
 export const connectToMongoDb = async (
   connectionName: string = DEFAULT_CONNECTION_NAME,
-): Promise<Mongoose | Error | void> => {
+): Promise<Mongoose | void> => {
   const connectionsMap = initializeConnectionMap(
     activeConnections,
     connectionName,
@@ -113,6 +110,9 @@ export const connectToMongoDb = async (
   );
 
   if (connectedOrError instanceof Error) {
+    // eslint-disable-next-line functional/no-expression-statement
+    logger.error(connectedOrError.message);
+
     // eslint-disable-next-line functional/no-throw-statement
     throw connectedOrError;
   }

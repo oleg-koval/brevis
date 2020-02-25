@@ -15,6 +15,7 @@ module.exports = {
   verbose: true,
   preset: 'ts-jest',
   resetMocks: true,
+  forceExit: true,
   roots: ['<rootDir>/src', '<rootDir>/__mocks__'],
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],

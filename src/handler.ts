@@ -2,72 +2,183 @@
 /* eslint-disable functional/no-expression-statement */
 
 import './environment';
-import { Handler, APIGatewayEvent, Context } from 'aws-lambda';
-import {
-  BAD_REQUEST,
-  getStatusText,
-  OK,
-  INTERNAL_SERVER_ERROR,
-} from 'http-status-codes';
 
-import { logInfo } from './logging/index';
-import { connectToMongoDb } from './database/mongo';
-import { MessageModel } from './models/message';
 import { Document } from 'mongoose';
+import { Handler, APIGatewayEvent } from 'aws-lambda';
+import { isUri } from 'valid-url';
+import { pick, isEmpty, pathOr } from 'ramda';
 
-export const create: Handler = async (
-  event: APIGatewayEvent,
-  context: Context,
-) => {
-  /**
-   * If this is false, any outstanding events continue to run during the next invocation
-   */
-  // eslint-disable-next-line functional/immutable-data
-  context.callbackWaitsForEmptyEventLoop = false;
-  logInfo(JSON.stringify(context));
-  await connectToMongoDb();
+import { logger } from './logging/winston';
+import { generateHash } from './shortId';
+import { connectToMongoDb } from './database/mongo';
+import {
+  ShortURLModel,
+  findAllStatsForUrl,
+  ShortUrlType,
+  updateUsedAt,
+} from './models/shortUrl';
+import {
+  respondBadRequest,
+  respondOk,
+  respondInternalError,
+  respondNotFound,
+  respondNoContent,
+} from './responses';
+import { getDateYearFromDate } from './date';
 
-  if (typeof event.body !== 'string') {
-    return {
-      statusCode: BAD_REQUEST,
-      headers: { 'Content-Type': 'text/plain' },
-      body: getStatusText(BAD_REQUEST),
-    };
-  }
-
-  try {
-    const message: Document = await MessageModel.create(JSON.parse(event.body));
-    return {
-      statusCode: OK,
-      body: JSON.stringify(message),
-    };
-  } catch (error) {
-    return {
-      statusCode: error.statusCode || INTERNAL_SERVER_ERROR,
-      headers: { 'Content-Type': 'text/plain' },
-      body: 'Could not create the note.',
-    };
-  }
+type CreateUrlRequestParameters = {
+  readonly url: string;
 };
 
-export const get: Handler = async (context: Context) => {
-  // eslint-disable-next-line functional/immutable-data
-  context.callbackWaitsForEmptyEventLoop = false;
-  logInfo(JSON.stringify(context));
+export type StatsResponsePayload = {
+  readonly url: string;
+  readonly hashes: readonly string[];
+  readonly ipAddresses: readonly string[];
+};
+
+export type CreateUrlResponsePayload = {
+  readonly hash: string;
+};
+
+export type GetUrlByHashResponsePayload = Pick<
+  CreateUrlRequestParameters,
+  'url'
+>;
+
+const ipAddressOrUndefined = (event: APIGatewayEvent): string | undefined =>
+  pathOr(undefined, ['requestContext', 'identity', 'sourceIp'], event);
+
+const isValidRequestBody = (event: APIGatewayEvent): boolean => {
+  if (typeof event.body !== 'string') {
+    return false;
+  }
+
+  const body: CreateUrlRequestParameters = JSON.parse(event.body);
+  if (isUri(body.url) === undefined) {
+    return false;
+  }
+
+  return true;
+};
+
+/**
+ * Request a shortened url. Even if a url was already requested it should generate a new hash.
+
+   POST /hash
+   body { url: string }
+
+   returns json
+   {
+     "hash": ${some_hash}
+   }
+ */
+export const createShortUrlByHash: Handler = async (event: APIGatewayEvent) => {
+  const ip = ipAddressOrUndefined(event);
+
+  if (isValidRequestBody(event) === false || ip === undefined) {
+    return respondBadRequest();
+  }
 
   try {
     await connectToMongoDb();
-    const messages: readonly Document[] = await MessageModel.find();
 
-    return {
-      statusCode: OK,
-      body: JSON.stringify(messages),
-    };
+    const created = await ShortURLModel.create({
+      url: JSON.parse(event.body!).url,
+      ip,
+    });
+
+    return respondOk({ hash: created._id });
   } catch (error) {
-    return {
-      statusCode: error.statusCode || INTERNAL_SERVER_ERROR,
-      headers: { 'Content-Type': 'text/plain' },
-      body: getStatusText(INTERNAL_SERVER_ERROR),
-    };
+    logger.error(error.message);
+
+    return respondInternalError();
+  }
+};
+
+/**
+ * Get the url by using hash. A possible endpoint could look like this:
+
+   GET /url?hash=${HASH}
+
+   returns json
+
+   {
+     "url": ${URL}
+   }
+ */
+export const getUrlByHash: Handler = async (event: APIGatewayEvent) => {
+  const hash = event.queryStringParameters?.hash;
+
+  if (typeof hash !== 'string') {
+    return respondBadRequest();
+  }
+
+  if (generateHash.isValid(hash) === false) {
+    return respondBadRequest();
+  }
+
+  try {
+    await connectToMongoDb();
+
+    const shortUrlDocument = await ShortURLModel.findById(hash);
+
+    const documentData = shortUrlDocument?.toObject() as ShortUrlType;
+    if (shortUrlDocument === null) {
+      return respondNotFound();
+    }
+
+    await updateUsedAt(shortUrlDocument as Document & ShortUrlType, Date.now());
+    return respondOk(pick(['url'], documentData));
+  } catch (error) {
+    logger.error(error.message);
+
+    return respondInternalError();
+  }
+};
+
+/**
+ * Create cronjob which will delete every day at 12.00am hashes of URLs which are not longer used by 12 months.
+ */
+// eslint-disable-next-line functional/functional-parameters
+export const cleanup: Handler = async () => {
+  try {
+    await connectToMongoDb();
+
+    const shortUrlDocument = await ShortURLModel.deleteMany({
+      usedAt: { $lte: getDateYearFromDate(new Date()) },
+    });
+
+    logger.info(JSON.stringify(shortUrlDocument));
+
+    return respondNoContent();
+  } catch (error) {
+    logger.error(error.message);
+
+    return respondInternalError();
+  }
+};
+
+/**
+ * Get the statistics of a url.
+ */
+export const getStatsByUrl: Handler = async (event: APIGatewayEvent) => {
+  if (isValidRequestBody(event) === false) {
+    return respondBadRequest();
+  }
+
+  try {
+    await connectToMongoDb();
+
+    const statistics = await findAllStatsForUrl({
+      url: JSON.parse(event.body!).url,
+    });
+
+    return isEmpty(statistics) === false
+      ? respondOk(statistics)
+      : respondNotFound();
+  } catch (error) {
+    logger.error(error.message);
+
+    return respondInternalError();
   }
 };

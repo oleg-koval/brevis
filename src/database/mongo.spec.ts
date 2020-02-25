@@ -2,7 +2,6 @@ import * as mongoose from 'mongoose';
 
 import * as mongo from './mongo';
 import * as helpers from './helpers';
-import * as logger from '../logging';
 
 afterEach((): void => {
   jest.restoreAllMocks();
@@ -10,7 +9,7 @@ afterEach((): void => {
 
 describe('connectToMongoDb', (): void => {
   describe('error handling', (): void => {
-    it('throws if connection is already in use - code 1', async (): Promise<
+    it('re-uses connection if it is already in use - code 1', async (): Promise<
       void
     > => {
       jest
@@ -37,9 +36,16 @@ describe('connectToMongoDb', (): void => {
 
       expect.assertions(1);
 
-      await expect(
-        mongo.connectToMongoDb('test-connection'),
-      ).resolves.toBeUndefined();
+      await expect(mongo.connectToMongoDb('test-connection')).resolves
+        .toMatchInlineSnapshot(`
+              Object {
+                "connections": Array [
+                  Object {
+                    "readyState": 1,
+                  },
+                ],
+              }
+            `);
     });
 
     it('throws if connection is uninitialized - code 99', async (): Promise<
@@ -119,6 +125,10 @@ describe('connectToMongoDb', (): void => {
             return mockMap;
           });
 
+        jest
+          .spyOn(helpers, 'getMongoDbUrl')
+          .mockReturnValueOnce(new Error('MongoDb url is not set.'));
+
         jest.spyOn(mongoose, 'connect').mockResolvedValue(
           Promise.resolve({
             connections: [
@@ -155,7 +165,7 @@ describe('connectToMongoDb', (): void => {
         jest
           .spyOn(helpers, 'getMongoDbUrl')
           .mockImplementationOnce(() => 'test-connection-url');
-        jest.spyOn(logger, 'logInfo');
+
         jest.spyOn(mongoose, 'connect').mockResolvedValue(
           Promise.resolve({
             connections: [
@@ -179,5 +189,45 @@ describe('connectToMongoDb', (): void => {
       `);
       },
     );
+
+    it('returns mongoose connected state, initializes default connection', async (): Promise<
+      void
+    > => {
+      expect.assertions(1);
+
+      jest
+        .spyOn(helpers, 'initializeConnectionMap')
+        .mockImplementationOnce(() => {
+          const mockMap = new Map();
+          mockMap.set(helpers.DEFAULT_CONNECTION_NAME, 0);
+          return mockMap;
+        });
+
+      jest
+        .spyOn(helpers, 'getMongoDbUrl')
+        .mockImplementationOnce(() => 'test-connection-url');
+
+      jest.spyOn(mongoose, 'connect').mockResolvedValue(
+        Promise.resolve({
+          connections: [
+            {
+              readyState: 1,
+            },
+          ],
+        } as typeof mongoose),
+      );
+
+      const connection = await mongo.connectToMongoDb();
+
+      expect(connection).toMatchInlineSnapshot(`
+        Object {
+          "connections": Array [
+            Object {
+              "readyState": 1,
+            },
+          ],
+        }
+      `);
+    });
   });
 });
