@@ -12,9 +12,11 @@ module.exports = {
       statements: 99,
     },
   },
+  verbose: true,
   preset: 'ts-jest',
   resetMocks: true,
+  forceExit: true,
   roots: ['<rootDir>/src', '<rootDir>/__mocks__'],
   testEnvironment: 'node',
-  // setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
 };

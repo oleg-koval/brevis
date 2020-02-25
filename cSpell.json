@@ -31,9 +31,11 @@
     "cors",
     "dotenv",
     "dependabot",
+    "mongodb",
     "editorconfig",
     "oleg",
     "koval",
-    "promisify"
+    "promisify",
+    "HDFS"
   ]
 }

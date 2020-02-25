@@ -4,3 +4,5 @@ lib
 package.json
 package-lock.json
 .serverless
+.build
+.webpack
