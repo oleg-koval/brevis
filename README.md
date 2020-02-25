@@ -37,7 +37,8 @@ Some things would be great to add:
 
 - use base62 instead of base64 encoding for url hash. Additional characters `$@`
   are not "friendly" for short-url;
-- add black list of urls, during creation check if url is not blacklisted;
+- add black list of urls, during creation check if url is not blacklisted or
+  using bloom filter;
 - use cache with ttl for entries in front of database;
 - alerting in slack channel;
 - based on usage of `GET /stats/url` data can be stored in HDFS or similar to
