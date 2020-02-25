@@ -123,6 +123,18 @@ sls offline start
 It is possible to invoke functions locally (connection to local MongoDB or
 hosted should be provided) with `sls invoke local --function <functionName>`
 
+To shutdown database without delete all containers.
+
+```shell
+docker-compose stop
+```
+
+To shutdown database and delete all containers.
+
+```shell
+docker-compose down
+```
+
 #### Run tests
 
 ## Tests
