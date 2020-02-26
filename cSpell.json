@@ -36,6 +36,7 @@
     "oleg",
     "koval",
     "promisify",
-    "HDFS"
+    "hdfs",
+    "hmarr"
   ]
 }
