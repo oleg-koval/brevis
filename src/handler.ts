@@ -170,7 +170,6 @@ export const getStatsByUrl: Handler = async (event: APIGatewayEvent) => {
     await connectToMongoDb();
 
     const statistics = await aggregateStatistics(JSON.parse(event.body!).url);
-    console.log('TCL: getStatsByUrl:Handler -> statistics', statistics);
 
     return statistics !== undefined ? respondOk(statistics) : respondNotFound();
   } catch (error) {
