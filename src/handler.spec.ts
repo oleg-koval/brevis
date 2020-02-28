@@ -57,13 +57,13 @@ describe('getUrlByHash', (): void => {
       const response = getUrlByHash(event, context, callbackMock);
 
       await expect(response).resolves.toMatchInlineSnapshot(`
-        Object {
-          "body": "Bad Request",
-          "headers": Object {
-            "Content-Type": "text/plain",
-          },
-          "statusCode": 400,
-        }
+          Object {
+            "body": "Bad Request",
+            "headers": Object {
+              "Content-Type": "text/plain",
+            },
+            "statusCode": 400,
+          }
       `);
     });
 
@@ -311,18 +311,18 @@ describe('getStatsByUrl', (): void => {
 
       const res = await response;
       expect(JSON.parse(res.body)).toMatchInlineSnapshot(`
-        Object {
-          "hashes": Array [
-            "foobar",
-            "foobar2",
-            "424242",
-          ],
-          "ipAddresses": Array [
-            "1.1.1.1",
-            "2.2.2.2",
-          ],
-          "url": "https://google.com",
-        }
+      Object {
+        "hashes": Array [
+          "foobar",
+          "424242",
+          "foobar2",
+        ],
+        "ipAddresses": Array [
+          "1.1.1.1",
+          "2.2.2.2",
+        ],
+        "url": "https://google.com",
+      }
       `);
     });
   });
