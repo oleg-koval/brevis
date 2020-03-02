@@ -7,7 +7,7 @@
   "dependencies": {
     "aws-lambda": "^1.0.5",
     "http-status-codes": "^1.4.0",
-    "mongoose": "^5.9.2",
+    "mongoose": "^5.9.3",
     "ramda": "^0.27.0",
     "shortid": "^2.2.15",
     "valid-url": "^1.0.9",
