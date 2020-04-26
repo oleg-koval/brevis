@@ -36,6 +36,9 @@ const ShortURLSchema = new Schema(
   options,
 );
 
+ShortURLSchema.index({ usedAt: 1 });
+ShortURLSchema.index({ url: 1 });
+
 export const ShortURLModel = model('ShortUrl', ShortURLSchema);
 
 /**
@@ -52,35 +55,27 @@ export const updateUsedAt = async (
   return shortUrlDocument.save();
 };
 
-export const findAllStatsForUrl = async (
-  condition: Pick<ShortUrlType, 'url'>,
+export const aggregateStatistics = async (
+  url: string,
 ): Promise<StatsResponsePayload> => {
-  const shortUrlDocuments = await ShortURLModel.find(condition);
-
-  return shortUrlDocuments.reduce<StatsResponsePayload>(
-    (
-      previous: StatsResponsePayload,
-      current: Document,
-    ): StatsResponsePayload => {
-      const document: ShortUrlType = current.toObject();
-
-      if (Object.keys(previous).length === 0) {
-        return {
-          url: condition.url,
-          hashes: [document._id],
-          ipAddresses: [document.ip],
-        };
-      }
-
-      return {
-        ...previous,
-        hashes: [...previous.hashes, document._id],
-        ipAddresses:
-          previous.ipAddresses.includes(document.ip) === false
-            ? [...previous.ipAddresses, document.ip]
-            : previous.ipAddresses,
-      };
+  const [statistics] = await ShortURLModel.aggregate([
+    { $match: { url } },
+    {
+      $group: {
+        _id: '$url',
+        ipAddresses: { $addToSet: '$ip' },
+        hashes: { $addToSet: '$_id' },
+      },
     },
-    {} as StatsResponsePayload,
-  );
+    {
+      $project: {
+        _id: 0,
+        url: '$_id',
+        ipAddresses: 1,
+        hashes: 2,
+      },
+    },
+  ]);
+
+  return statistics;
 };
