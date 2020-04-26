@@ -57,14 +57,14 @@ describe('getUrlByHash', (): void => {
       const response = getUrlByHash(event, context, callbackMock);
 
       await expect(response).resolves.toMatchInlineSnapshot(`
-        Object {
-          "body": "Bad Request",
-          "headers": Object {
-            "Content-Type": "text/plain",
-          },
-          "statusCode": 400,
-        }
-      `);
+                        Object {
+                          "body": "Bad Request",
+                          "headers": Object {
+                            "Content-Type": "text/plain",
+                          },
+                          "statusCode": 400,
+                        }
+                  `);
     });
 
     it('returns internal server error if connection to DB cant be established', async (): Promise<
@@ -284,23 +284,23 @@ describe('getStatsByUrl', (): void => {
 
   describe('data persistance', (): void => {
     it('returns url by hash', async (): Promise<void> => {
-      expect.assertions(1);
+      expect.assertions(3);
 
       const context = {} as Context;
 
       // create entry in database
       await ShortURLModel.create({
-        _id: 'foobar',
+        _id: 'A',
         url: 'https://google.com',
         ip: '1.1.1.1',
       });
       await ShortURLModel.create({
-        _id: 'foobar2',
+        _id: 'B',
         url: 'https://google.com',
         ip: '1.1.1.1',
       });
       await ShortURLModel.create({
-        _id: '424242',
+        _id: 'C',
         url: 'https://google.com',
         ip: '2.2.2.2',
       });
@@ -310,20 +310,22 @@ describe('getStatsByUrl', (): void => {
       const response = getStatsByUrl(event, context, callbackMock);
 
       const res = await response;
-      expect(JSON.parse(res.body)).toMatchInlineSnapshot(`
-        Object {
-          "hashes": Array [
-            "foobar",
-            "foobar2",
-            "424242",
-          ],
-          "ipAddresses": Array [
-            "1.1.1.1",
-            "2.2.2.2",
-          ],
-          "url": "https://google.com",
-        }
-      `);
+      const parsedResponse = JSON.parse(res.body);
+
+      expect(parsedResponse.hashes.sort()).toMatchInlineSnapshot(`
+Array [
+  "A",
+  "B",
+  "C",
+]
+`);
+      expect(parsedResponse.ipAddresses.sort()).toMatchInlineSnapshot(`
+Array [
+  "1.1.1.1",
+  "2.2.2.2",
+]
+`);
+      expect(parsedResponse.url).toMatchInlineSnapshot(`"https://google.com"`);
     });
   });
 });

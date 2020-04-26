@@ -6,16 +6,16 @@ import './environment';
 import { Document } from 'mongoose';
 import { Handler, APIGatewayEvent } from 'aws-lambda';
 import { isUri } from 'valid-url';
-import { pick, isEmpty, pathOr } from 'ramda';
+import { pick, pathOr } from 'ramda';
 
 import { logger } from './logging/winston';
 import { generateHash } from './shortId';
 import { connectToMongoDb } from './database/mongo';
 import {
   ShortURLModel,
-  findAllStatsForUrl,
   ShortUrlType,
   updateUsedAt,
+  aggregateStatistics,
 } from './models/shortUrl';
 import {
   respondBadRequest,
@@ -169,13 +169,9 @@ export const getStatsByUrl: Handler = async (event: APIGatewayEvent) => {
   try {
     await connectToMongoDb();
 
-    const statistics = await findAllStatsForUrl({
-      url: JSON.parse(event.body!).url,
-    });
+    const statistics = await aggregateStatistics(JSON.parse(event.body!).url);
 
-    return isEmpty(statistics) === false
-      ? respondOk(statistics)
-      : respondNotFound();
+    return statistics !== undefined ? respondOk(statistics) : respondNotFound();
   } catch (error) {
     logger.error(error.message);
 
