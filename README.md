@@ -162,9 +162,7 @@ Also used to deploy automatically to AWS Lambda `production` after PR merged to
 
 ### Formatting
 
-This project uses [Prettier](https://prettier.io) to automate formatting. All
-supported files are being reformatted in a pre-commit hook. You can also use one
-of the two scripts to validate and optionally fix all of the files:
+This project uses [Prettier](https://prettier.io) to automate formatting.
 
 ```bash
 npm run format
@@ -174,18 +172,11 @@ npm run format:fix
 ### Linting
 
 This project uses [ESLint](https://eslint.org) to enable static analysis.
-TypeScript files are linted using a [custom configuration](./.eslintrc). You can
-use one of the following scripts to validate and optionally fix all of the
-files:
 
 ```bash
 npm run lint
 npm run lint:fix
 ```
-
-## Contributing
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ### Automation
 
