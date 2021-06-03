@@ -23,7 +23,7 @@
     "@types/node": "^14.6.0",
     "@types/ramda": "^0.26.43",
     "@types/shortid": "0.0.29",
-    "@typescript-eslint/eslint-plugin": "^2.21.0",
+    "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.21.0",
     "bluebird": "^3.7.2",
     "commitizen": "^4.0.3",
