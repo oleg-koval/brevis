@@ -27,7 +27,7 @@
     "@typescript-eslint/parser": "^2.21.0",
     "bluebird": "^3.7.2",
     "commitizen": "^4.0.3",
-    "cspell": "^4.0.53",
+    "cspell": "^5.6.5",
     "eslint": "^6.8.0",
     "eslint-plugin-functional": "^3.0.1",
     "husky": "^4.2.3",
